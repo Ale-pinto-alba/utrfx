@@ -45,7 +45,7 @@ def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collectio
     for transcript_id, group in utr_df.groupby("transcript_id"):
         contig = genome_build.contig_by_name(group["seqname"].iloc[0])
         if contig is None:
-            print("no contig found")
+            print("No contig found.")
         else:
             start_codon = start_codon_df[start_codon_df["transcript_id"] == transcript_id]
 

@@ -18,23 +18,3 @@ def fpath_example_gtf(fpath_data_dir: str) -> str:
 @pytest.fixture(scope="session")
 def genome_build() -> GenomeBuild:
     return GRCh38
-
-@pytest.fixture(scope="session")
-def first_region_favorite_tx(genome_build: genome_build):
-    contig = genome_build.contig_by_name("chr22")
-    return GenomicRegion(contig=contig, start=44668712, end=44668805, strand=Strand.POSITIVE)
-
-@pytest.fixture(scope="session")
-def second_region_favorite_tx(genome_build: genome_build):
-    contig = genome_build.contig_by_name("chr22")
-    return GenomicRegion(contig=contig, start=44702491, end=44702501, strand=Strand.POSITIVE)
-
-@pytest.fixture(scope="session")
-def first_region_another_tx(genome_build:genome_build):
-    contig = genome_build.contig_by_name("chr22")
-    return GenomicRegion(contig=contig, start=26837999, end=26838057, strand=Strand.NEGATIVE)
-
-@pytest.fixture(scope="session")
-def second_region_another_tx(genome_build:genome_build):
-    contig = genome_build.contig_by_name("chr22")
-    return GenomicRegion(contig=contig, start=26841401, end=26841576, strand=Strand.NEGATIVE)
