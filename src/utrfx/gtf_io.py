@@ -84,4 +84,4 @@ def parse_strand(val: str) -> Strand:
     elif val == "-":
         return Strand.NEGATIVE
     else:
-        raise ValueError()
+        raise ValueError(f"Unknown strand value {val}")
