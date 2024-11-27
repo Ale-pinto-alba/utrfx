@@ -8,7 +8,7 @@ def test_utr_length(example_uorfs: UORFsProcessor):
     assert example_uorfs.five_utr_lenght() == 623
 
 def test_uorfs(example_uorfs: UORFsProcessor):
-    for uorf in example_uorfs._uorfs:
+    for uorf in example_uorfs.uorfs:
         assert uorf in example_uorfs.tx_sequence         # Check each uORF is in the transcript sequence               
         assert uorf in example_uorfs.five_utr_sequence   # Check each uORF is in the 5'UTR sequence
         assert uorf.startswith("ATG")

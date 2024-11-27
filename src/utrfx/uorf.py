@@ -5,16 +5,16 @@ from Bio import SeqIO
 class UORFsProcessor:
     """
     `UORFsProcessor` takes a FASTA file with the cDNA sequences of a transcript and its parts to extract different
-    features of the 5'UTR region and its existing uORFs (if any).
+    features of the uORFs available.
 
     :param fpath: FASTA file path.
-    :param seq_records: list of every record of the class 'Bio.SeqRecord.SeqRecord' in the file.
-    :param tx_record: record (class 'Bio.SeqRecord.SeqRecord') of the transcript.
-    :param tx_seq: string of the complete transcript nucleotide sequence.
-    :param tx_id: GENCODE transcript identifier.
-    :param five_utr_seq: string of the 5'UTR nucleotide sequence.
-    :param uorfs: list of uORFs (if any).
-    :param uorfs_with_20nt_more: list of uORFs (if any) with the corresponding 20 nucleotides downstream (if possible).
+    :ivar seq_records: list of every record of the class 'Bio.SeqRecord.SeqRecord' in the file.
+    :ivar tx_record: record (class 'Bio.SeqRecord.SeqRecord') of the transcript.
+    :ivar tx_seq: string of the complete transcript nucleotide sequence.
+    :ivar tx_id: GENCODE transcript identifier.
+    :ivar five_utr_seq: string of the 5'UTR nucleotide sequence.
+    :ivar uorfs: list of uORFs (if any).
+    :ivar uorfs_with_20nt_more: list of uORFs (if any) with the corresponding 20 nucleotides downstream (if possible).
     """
     def __init__(self, fpath: str):
         self._fpath = fpath
@@ -74,7 +74,7 @@ class UORFsProcessor:
             
     def _uorf_extractor(self) -> typing.List[str]:
         """
-        Take the nucleotide sequence of a transcript 5'UTR region to extract its uORFs sequences (if any).
+        Take the nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
         """
         five_sequence = self._five_utr_seq
         uorfs = []
@@ -115,9 +115,9 @@ class UORFsProcessor:
 
         for uorf in self._uorfs:
             start_index = self._five_utr_seq.find(uorf)
-            _20_nts_after_uorf = self._five_utr_seq[start_index + len(uorf): start_index + len(uorf) + 20] 
+            twenty_nts_after_uorf = self._five_utr_seq[start_index + len(uorf): start_index + len(uorf) + 20] 
             
-            uorf_plus_20nt = uorf + _20_nts_after_uorf
+            uorf_plus_20nt = uorf + twenty_nts_after_uorf
             uorfs_plus_20nt.append(uorf_plus_20nt)
             assert uorf in uorf_plus_20nt, "uORF lost."
 
@@ -160,18 +160,18 @@ class UORFsProcessor:
     
     def gc_content_10nt_after_uorf(self) -> typing.List[float]:
         """
-        Get the GC content of the 10 nucleotides after the uORF stop codon.
+        Get the GC content of the 10 nucleotides (if possible) after the uORF stop codon.
         """
-        _10nt_after_uorf = []
+        ten_nt_after_uorf = []
         gc_content_10nt_after_uorf = []
 
         for uorf in self._uorfs:
             start_index = self._five_utr_seq.find(uorf)
             nts_after_uorf = self._five_utr_seq[start_index + len(uorf): start_index + len(uorf) + 10] 
             
-            _10nt_after_uorf.append(nts_after_uorf)
+            ten_nt_after_uorf.append(nts_after_uorf)
         
-        for nts in _10nt_after_uorf:
+        for nts in ten_nt_after_uorf:
             g = nts.count("G")
             c = nts.count("C")
             gc_content = ((g+c)/10) * 100
