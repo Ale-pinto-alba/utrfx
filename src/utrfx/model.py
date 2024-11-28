@@ -98,7 +98,7 @@ class Transcript:
         return self._tx_id
     
     @property
-    def five_utr(self) -> typing.Collection[GenomicRegion]:
+    def five_utr(self) -> FiveUTR:
         return self._five_utr
 
     def __repr__(self):
