@@ -1,82 +1,34 @@
 import typing
 
-from Bio import SeqIO
-
-class UORFsProcessor:
+class UORFs:
     """
-    `UORFsProcessor` takes a FASTA file with the cDNA sequences of a transcript and its parts to extract different
-    features of the uORFs available.
+    `UORFs` represents the uORFs available in a 5'UTR region of a transcript (no uORFs whose end overlaps with the mORF).
 
-    :param fpath: FASTA file path.
-    :ivar seq_records: list of every record of the class 'Bio.SeqRecord.SeqRecord' in the file.
-    :ivar tx_record: record (class 'Bio.SeqRecord.SeqRecord') of the transcript.
-    :ivar tx_seq: string of the complete transcript nucleotide sequence.
-    :ivar tx_id: GENCODE transcript identifier.
-    :ivar five_utr_seq: string of the 5'UTR nucleotide sequence.
-    :ivar uorfs: list of uORFs (if any).
-    :ivar uorfs_with_20nt_more: list of uORFs (if any) with the corresponding 20 nucleotides downstream (if possible).
+    :param tx_id: GENCODE transcript identifier.
+    :param five_prime_sequence: string or file containing the 5'UTR cDNA sequence.
     """
-    def __init__(self, fpath: str):
-        self._fpath = fpath
-        self._seq_records = self._parse_fasta()
-        self._tx_record = self._get_tx_record()
-        self._tx_seq = str(self._tx_record.seq).strip()
-        self._tx_id = self._tx_record.id
-        self._five_utr_seq = self._get_five_utr_sequence()
-        self._uorfs = self._uorf_extractor()
-        self._uorfs_with_20nt_more = self._uorfs_plus_20nt_extractor()
+    def __init__(self, tx_id: str, five_prime_sequence: str):
+        self._tx_id = tx_id
+        self._five_prime_sequence = five_prime_sequence
 
     @property
     def tx_id(self) -> str:
         return self._tx_id
-    
-    @property 
-    def tx_sequence(self) -> str:
-        return self._tx_seq
-    
-    @property
-    def five_utr_sequence(self) -> str:
-        return self._five_utr_seq
-    
-    @property
-    def uorfs(self) -> typing.List[str]:
-        return self._uorfs
-    
-    @property
-    def uorfs_with_20nt_more(self) -> typing.List[str]:
-        return self._uorfs_with_20nt_more
 
-    def five_utr_lenght(self) -> int:
-        return len(self._five_utr_seq)
-    
-    def _parse_fasta(self) -> typing.List:
-        seq_records = list(SeqIO.parse(self._fpath, "fasta"))
-        if not seq_records:
-            raise ValueError("Empty FASTA file or no records.")
-        return seq_records
+    @property
+    def five_prime_sequence(self) -> str:
+        if self._five_prime_sequence == str:
+            return self._five_prime_sequence
+        else:
+            with open(self._five_prime_sequence) as f: 
+                sequence = f.read().replace('\n', '')
+            return sequence
 
-    def _get_tx_record(self):
-        for seq_record in self._seq_records:
-            if "cdna" in seq_record.description:
-                tx_cdna = seq_record    
-                if not tx_cdna:
-                    raise ValueError("No transcript cDNA in the FASTA file.")
-                return tx_cdna
-
-    def _get_five_utr_sequence(self) -> str:
-        for seq_record in self._seq_records:
-            if "utr5" in seq_record.description:
-                five_utr_seq = str(seq_record.seq).strip()   
-                assert isinstance(five_utr_seq, str)
-                if not five_utr_seq:
-                    raise ValueError("No 5'UTR region in the FASTA file.")
-                return five_utr_seq
-            
-    def _uorf_extractor(self) -> typing.List[str]:
+    def uorf_extractor(self) -> typing.Collection[str]:
         """
         Take the nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
         """
-        five_sequence = self._five_utr_seq
+        five_sequence = self._five_prime_sequence
         uorfs = []
             
         while "ATG" in five_sequence:  
@@ -101,41 +53,39 @@ class UORFsProcessor:
                 uorfs.append("".join(codon_list))
 
             five_sequence = five_sequence[start_index + 3:]
-            # It resumes the search a codon after the start codon of the current uORF, but should I resume it after the stop
-            # codon or I don´t look for overlapping uORFs?
-            
+
         return uorfs
     
-    def _uorfs_plus_20nt_extractor(self) -> typing.List[str]:
-        """
-        Search the uORFs in their 5'UTR region to extract the uORFs with the 20 nucleotides (if possible) after the
-        corresponding stop codon for indel analysis.
-        """
-        uorfs_plus_20nt = []
-
-        for uorf in self._uorfs:
-            start_index = self._five_utr_seq.find(uorf)
-            twenty_nts_after_uorf = self._five_utr_seq[start_index + len(uorf): start_index + len(uorf) + 20] 
-            
-            uorf_plus_20nt = uorf + twenty_nts_after_uorf
-            uorfs_plus_20nt.append(uorf_plus_20nt)
-            assert uorf in uorf_plus_20nt, "uORF lost."
-
-        return uorfs_plus_20nt
-
-    def number_of_uorfs(self) -> int:
-        return len(self._uorfs)
+    @property
+    def uorfs(self) -> typing.Collection[str]:
+        return self.uorf_extractor()
     
-    def uorfs_lengths(self) -> typing.List[int]:
-        return [len(uorf) for uorf in self._uorfs]
+    def __repr__(self):
+        return f"UORFS(tx_id= {self._tx_id}, uORFs{self.uorfs})"
     
-    def gc_content(self) -> typing.List[float]:
+
+class UORFs_calculations:
+    """
+    `UORF_calculations` is a container for the inner calculations of the uORFs.
+
+    :param uorfs: collection of uORF(s) cDNA sequence(s) of a transcript.
+    """
+    def __init__(self, uorfs: UORFs):
+        self._uorfs = uorfs
+    
+    def number_uorfs(self) -> int:
+        return len(self._uorfs.uorfs)
+    
+    def uorfs_lengths(self) -> typing.Collection[int]:
+        return [len(uorf) for uorf in self._uorfs.uorfs]
+    
+    def gc_content(self) -> typing.Collection[float]:
         """
         Get the GC content of each uORF.
         """
         gc_content_per_uorf = []
 
-        for uorf in self._uorfs:
+        for uorf in self._uorfs.uorfs:
             total = len(uorf)
             g = uorf.count("G")
             c = uorf.count("C")
@@ -145,29 +95,87 @@ class UORFsProcessor:
 
         return gc_content_per_uorf
     
-    def intercistonic_distance(self) -> typing.List[int]:
+    def __repr__(self):
+        return f"UORFs_calculations(tx_id= {self._uorfs.tx_id}, uORFs= {self.number_uorfs()}, lengths= {self.uorfs_lengths()}, GC_content= {self.gc_content()})"
+
+
+class UORFs_indel_analysis:
+    """
+    `UORFs_indel_analysis` is a container for the uORFs and the twenty nucleotides after (if possible) for their use
+    in indel analysis.
+
+    :param uorfs: collection of uORF(s) cDNA sequence(s) of a transcript.
+    """
+    def __init__(self, uorfs: UORFs):
+        self._uorfs = uorfs
+
+    def uorfs_plus_20nt_extractor(self) -> typing.Collection[str]:
+        
+        uorfs_plus_20nt = []
+        
+        for uorf in self._uorfs.uorfs:
+            start_index = self._uorfs.five_prime_sequence.find(uorf)
+            
+            twenty_nt_after = self._uorfs.five_prime_sequence[start_index + len(uorf): start_index + len(uorf) + 10]
+            uorf_plus_20nt = uorf + twenty_nt_after
+
+            uorfs_plus_20nt.append(uorf_plus_20nt)
+
+        return uorfs_plus_20nt
+    
+    @property
+    def uorfs_plus_20nt(self) -> typing.Collection[str]:
+        return self.uorfs_plus_20nt_extractor()
+    
+    def __repr__(self):
+        return f"UORFs_indel_analysis(tx_id= {self._uorfs.tx_id}, uORFs= {self.uorfs_plus_20nt})"
+    
+
+class UORFs_intercistonic_distance:
+    """
+    `UORFs_intercistonic_distance` represents the distance between the uORF stop codon and the mORF start codon for each one.
+
+    :param uorfs: collection of uORF(s) cDNA sequence(s) of a transcript.
+    """
+    def __init__(self, uorfs: UORFs):
+        self._uorfs = uorfs
+
+    def intercistonic_distance_calculator(self) -> typing.Collection[int]:
         """
-        Calculate the intercistonic distance (distance between the uORF stop codon and the mORF start codon).
+        Calculate the intercistonic distance, starting at the nucleotide (included) just after the uORF stop codon.
         """
         distances = []
 
-        for uorf in self._uorfs:
-            start_index = self._five_utr_seq.find(uorf) + len(uorf)
-            distance = len(self._five_utr_seq) - start_index
+        for uorf in self._uorfs.uorfs:
+            start_index = self._uorfs.five_prime_sequence.find(uorf) + len(uorf)
+            distance = len(self._uorfs.five_prime_sequence) - start_index
             
             distances.append(distance)
+
         return distances
+
     
-    def gc_content_10nt_after_uorf(self) -> typing.List[float]:
+    def __repr__(self):
+        return f"UORFs_intercistonic_distance(tx_id= {self._uorfs.tx_id}, intercistonic_distances= {self.intercistonic_distance_calculator()})"
+
+
+class UORFs_ten_nts_after:
+    """
+    `UORFs_ten_nts_after` is a container for the GC content of the ten nucleotides (if possible) after uORF the stop codon.
+    """
+    def __init__(self, uorfs: UORFs):
+        self._uorfs = uorfs
+
+    def gc_content_10nt_after_uorf(self) -> typing.Collection[float]:
         """
-        Get the GC content of the 10 nucleotides (if possible) after the uORF stop codon.
+        Get the GC content of the 10 nucleotides after the uORF stop codon.
         """
         ten_nt_after_uorf = []
         gc_content_10nt_after_uorf = []
 
-        for uorf in self._uorfs:
-            start_index = self._five_utr_seq.find(uorf)
-            nts_after_uorf = self._five_utr_seq[start_index + len(uorf): start_index + len(uorf) + 10] 
+        for uorf in self._uorfs.uorfs:
+            start_index = self._uorfs.five_prime_sequence.find(uorf)
+            nts_after_uorf = self._uorfs.five_prime_sequence[start_index + len(uorf): start_index + len(uorf) + 10] 
             
             ten_nt_after_uorf.append(nts_after_uorf)
         
@@ -177,7 +185,8 @@ class UORFsProcessor:
             gc_content = ((g+c)/10) * 100
 
             gc_content_10nt_after_uorf.append(gc_content)
-        return gc_content_10nt_after_uorf
 
+        return gc_content_10nt_after_uorf
+    
     def __repr__(self) -> str:
-        return f"UORFsProcessor(tx_id= {self.tx_id}, uORFs= {self.uorfs})"
+        return f"UORFs_ten_nts_after(tx_id= {self._uorfs.tx_id}, GC_content= {self.gc_content_10nt_after_uorf()})"
