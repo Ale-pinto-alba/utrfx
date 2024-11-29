@@ -2,65 +2,6 @@ import typing
     
 from .genome import GenomicRegion
 
-class Region:
-    """
-    
-    Hey, please use static constructors to create a region.
-
-    >>> from utrfx.genome import Region
-    >>> a = Region.from_one_based("chr1", 1, 10)
-    >>> a.length()
-    10
-    """
-
-    @staticmethod
-    def from_one_based(contig: str, start: int, end: int) -> "Region":
-        """
-
-        :param start: one based start coordinate (inclusive)
-        """
-        return Region(contig=contig, start=start-1, end=end)
-    
-    def __init__(
-        self,
-        contig: str,
-        start: int,
-        end: int,
-    ):
-        assert isinstance(contig, str), "contig given is not a str"
-        self._contig = contig
-
-        assert isinstance(start, int), "start is not an int"
-        self._start = start
-        assert self._start >= 0, "start must be non-negative"
-
-        assert isinstance(end, int), "end is not an int"
-        self._end = end
-        assert self._end >= 0, "end must be non-negative"
-
-        assert self._start <= self._end, "end cannot be before start"
-
-    def contig(self) -> str:
-        return self._contig
-    
-    def length(self) -> int:
-        return self._end - self._start
-
-    def overlaps_with(self, other: "Region") -> bool:
-
-        if self._contig == other._contig: 
-            if other._start == self._start and other._end == self._end:
-                return True
-            elif other._start <= self._end and other._end > self._end:
-                return True
-            elif other._end >= self._start and other._start < self._start:
-                return True
-            else:
-                return False
-        else:
-            return False
-
-
 class FiveUTR:
     """
     `FiveUTR` is a container for 5'UTR Genomic Regions.
