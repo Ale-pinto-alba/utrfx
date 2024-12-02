@@ -1,9 +1,15 @@
+import os
+
 import pytest
 
 from utrfx.genome import GenomeBuild, Strand
 from utrfx.gtf_io import read_gtf_into_txs
 
 class TestGtfIo:
+
+    @pytest.fixture(scope="class")
+    def fpath_example_gtf(self, fpath_data_dir: str) -> str:  
+        return os.path.join(fpath_data_dir,  "Homo.sapiens.GRCh38_sample.gtf")
 
     def test_read_gtf_into_txs(
         self,
@@ -41,13 +47,13 @@ class TestGtfIo:
 
         assert our_another_favorite_tx is not None
         assert len(our_another_favorite_tx._five_utr.regions) == 2
-        three, four = sorted(our_favorite_tx.five_utr.regions, key=lambda region: region.start)
+        three, four = sorted(our_another_favorite_tx.five_utr.regions, key=lambda region: region.start)
 
         assert three.contig.name == "22"
-        assert three.start == 44668712
-        assert three.end == 44668805
-        assert three.strand == Strand.POSITIVE
+        assert three.start == 26837999
+        assert three.end == 26838057
+        assert three.strand == Strand.NEGATIVE
         assert four.contig.name == "22"
-        assert four.start == 44702491
-        assert four.end == 44702501
-        assert four.strand == Strand.POSITIVE
+        assert four.start == 26841401
+        assert four.end == 26841576
+        assert four.strand == Strand.NEGATIVE
