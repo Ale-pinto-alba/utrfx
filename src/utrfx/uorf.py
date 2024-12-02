@@ -28,9 +28,9 @@ class UORFs:
         """
         Take the nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
         """
-        five_sequence = self._five_prime_sequence
+        five_sequence = self.five_prime_sequence
         uorfs = []
-            
+
         while "ATG" in five_sequence:  
             codon_list = []  
 
@@ -72,6 +72,14 @@ class UORFs_calculations:
     """
     def __init__(self, uorfs: UORFs):
         self._uorfs = uorfs
+
+    @property
+    def tx_id(self) -> str:
+        return self._uorfs.tx_id
+    
+    @property
+    def uorfs(self) -> typing.Collection[str]:
+        return self._uorfs.uorfs
     
     def number_uorfs(self) -> int:
         return len(self._uorfs.uorfs)
@@ -109,12 +117,21 @@ class UORFs_indel_analysis:
     def __init__(self, uorfs: UORFs):
         self._uorfs = uorfs
 
+    @property
+    def tx_id(self) -> str:
+        return self._uorfs.tx_id
+    
+    @property
+    def uorfs(self) -> typing.Collection[str]:
+        return self._uorfs.uorfs
+
     def uorfs_plus_20nt_extractor(self) -> typing.Collection[str]:
         
         uorfs_plus_20nt = []
         
         for uorf in self._uorfs.uorfs:
             start_index = self._uorfs.five_prime_sequence.find(uorf)
+            print(start_index)
             
             twenty_nt_after = self._uorfs.five_prime_sequence[start_index + len(uorf): start_index + len(uorf) + 10]
             uorf_plus_20nt = uorf + twenty_nt_after
@@ -139,6 +156,14 @@ class UORFs_intercistonic_distance:
     """
     def __init__(self, uorfs: UORFs):
         self._uorfs = uorfs
+
+    @property
+    def tx_id(self) -> str:
+        return self._uorfs.tx_id
+    
+    @property
+    def uorfs(self) -> typing.Collection[str]:
+        return self._uorfs.uorfs
 
     def intercistonic_distance_calculator(self) -> typing.Collection[int]:
         """
@@ -166,6 +191,14 @@ class UORFs_ten_nts_after:
     def __init__(self, uorfs: UORFs):
         self._uorfs = uorfs
 
+    @property
+    def tx_id(self) -> str:
+        return self._uorfs.tx_id
+    
+    @property
+    def uorfs(self) -> typing.Collection[str]:
+        return self._uorfs.uorfs
+
     def gc_content_10nt_after_uorf(self) -> typing.Collection[float]:
         """
         Get the GC content of the 10 nucleotides after the uORF stop codon.
@@ -176,7 +209,7 @@ class UORFs_ten_nts_after:
         for uorf in self._uorfs.uorfs:
             start_index = self._uorfs.five_prime_sequence.find(uorf)
             nts_after_uorf = self._uorfs.five_prime_sequence[start_index + len(uorf): start_index + len(uorf) + 10] 
-            
+
             ten_nt_after_uorf.append(nts_after_uorf)
         
         for nts in ten_nt_after_uorf:

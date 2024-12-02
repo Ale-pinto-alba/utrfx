@@ -2,7 +2,7 @@ import os
 import pytest
 
 from utrfx.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
-from utrfx.uorf import UORFsProcessor
+from utrfx.uorf import UORFs
 
 @pytest.fixture(scope="session")
 def fpath_test_dir() -> str:
@@ -50,4 +50,4 @@ def fpath_fasta(fpath_test_dir: str) -> str:
 
 @pytest.fixture(scope="session")
 def example_uorfs(fpath_fasta: str):
-    return UORFsProcessor(fpath=fpath_fasta)
+    return UORFs(tx_id="ENST00000381418.9", five_prime_sequence=fpath_fasta)
