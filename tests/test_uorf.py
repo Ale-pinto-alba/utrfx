@@ -2,59 +2,49 @@ import os
 
 import pytest
 
-from utrfx.uorf import UORFs, UORFs_calculations, UORFs_indel_analysis, UORFs_intercistonic_distance, UORFs_ten_nts_after
+from utrfx.uorf import FivePrimeSequence, UORF, extract_next_uorf, uorfs_plus_20nt_extractor, intercistonic_distance, gc_content, gc_content_of_the_ten_nts_after
 
 @pytest.fixture(scope="session")
 def fpath_fasta(fpath_test_dir: str) -> str:
     return os.path.join(fpath_test_dir, "data", "Homo_sapiens_ENST00000381418_9_sequence_sample.fa")
 
-def test_utr_length(example_uorfs: UORFs):
+@pytest.fixture(scope="session")
+def example_five_utr(fpath_fasta: str):
+    return FivePrimeSequence.from_fasta(tx_id= "ENST00000381418.9", fpath= fpath_fasta)
 
-    assert len(example_uorfs.five_prime_sequence) == 623
+def test_five_prime_sequence_length(example_five_utr: FivePrimeSequence):
 
-def test_uorfs_calculations(example_uorfs: UORFs):
+    assert example_five_utr.__len__() == 623
 
-    calculations = UORFs_calculations(uorfs=example_uorfs)
+def test_all_are_nucleotides(example_five_utr: FivePrimeSequence):
+    nucleotides = ["A", "T", "C", "G"]
 
-    for uorf in calculations.uorfs:
+    for nt in example_five_utr.five_prime_sequence.upper():
         
-        assert uorf in example_uorfs.five_prime_sequence
+        assert nt in nucleotides
 
-        assert uorf.startswith("ATG")
-        endswith_stop_codon = uorf[-3:] in ["TAA", "TAG", "TGA"]
-        assert endswith_stop_codon == True
+@pytest.fixture
+def example_uorf(example_five_utr: FivePrimeSequence):
+    return extract_next_uorf(five_prime_sequence= example_five_utr)
 
-        assert calculations.number_uorfs() == 3
+def test_uorf(example_uorf: UORF, example_five_utr: FivePrimeSequence):
 
-        assert calculations.uorfs_lengths() == [51, 105, 66]
+    assert example_uorf.__len__() == 51
 
-        assert calculations.gc_content() == [62.745098039215684, 70.47619047619048, 81.81818181818183]
+    assert example_uorf.is_in_five_utr(five_utr= example_five_utr) == True
 
+def test_gc_content(example_uorf: UORF):
 
-def test_uorfs_with_20nt_more(example_uorfs: UORFs):
+    assert gc_content(uorf= example_uorf) == 62.745098039215684
 
-    longer_uorfs = UORFs_indel_analysis(uorfs= example_uorfs)
-    
-    result_20nt_diff = [
-        (len(uorf_plus_20nt) - len(uorf)) <= 20 for uorf, uorf_plus_20nt in zip(example_uorfs.uorfs, longer_uorfs.uorfs_plus_20nt)
-    ] 
+def test_intercistonic_distance(example_five_utr: FivePrimeSequence, example_uorf: UORF):
 
-    result_contains = [
-        uorf in uorf_plus_20nt for uorf, uorf_plus_20nt in zip(example_uorfs.uorfs, longer_uorfs.uorfs_plus_20nt)
-    ]
+    assert intercistonic_distance(five_utr= example_five_utr, uorf= example_uorf) == 556.0
 
-    result_length = [
-        len(uorf) < len(uorf_plus_20nt) for uorf, uorf_plus_20nt in zip(example_uorfs.uorfs, longer_uorfs.uorfs_plus_20nt)
-    ]
+def test_gc_content_10_nt_after(example_five_utr: FivePrimeSequence, example_uorf: UORF):
 
-    assert result_20nt_diff == [True, True, True]
-    assert result_contains == [True, True, True]
-    assert result_length == [True, True, True]
+    assert gc_content_of_the_ten_nts_after(five_utr= example_five_utr, uorf= example_uorf) == 90.0
 
-def test_intercistonic_distances(example_uorfs: UORFs):
-    
-    assert UORFs_intercistonic_distance(uorfs= example_uorfs).intercistonic_distance_calculator() == [556, 216, 47]
+def test_uorf_plus_20_nt(example_five_utr: FivePrimeSequence, example_uorf: UORF):
 
-def test_gc_content_10nt_after_uorf(example_uorfs: UORFs):
-
-    assert UORFs_ten_nts_after(uorfs= example_uorfs).gc_content_10nt_after_uorf() == [90.0, 90.0, 70.0]
+    assert uorfs_plus_20nt_extractor(five_utr= example_five_utr, uorf= example_uorf) == "ATGGCGATCAGAGGTCCTGCTGCGCTCTCCGCCGCGCTCTACCTCCATTAGCCGCGCTGCGCGGTGCTGCG"

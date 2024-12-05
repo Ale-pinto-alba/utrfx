@@ -2,7 +2,6 @@ import os
 import pytest
 
 from utrfx.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
-from utrfx.uorf import UORFs
 
 @pytest.fixture(scope="session")
 def fpath_test_dir() -> str:
@@ -39,11 +38,3 @@ def first_region_another_tx(genome_build:genome_build):
 def second_region_another_tx(genome_build:genome_build):
     contig = genome_build.contig_by_name("chr22")
     return GenomicRegion(contig=contig, start=26841401, end=26841576, strand=Strand.NEGATIVE)
-
-@pytest.fixture(scope="session")
-def fpath_test_dir() -> str:
-    return os.path.dirname(__file__)
-
-@pytest.fixture(scope="session")
-def example_uorfs(fpath_fasta: str):
-    return UORFs(tx_id="ENST00000381418.9", five_prime_sequence=fpath_fasta)
