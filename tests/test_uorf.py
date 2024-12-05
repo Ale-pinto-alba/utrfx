@@ -1,8 +1,12 @@
-import pytest
-import typing
 import os
 
+import pytest
+
 from utrfx.uorf import UORFs, UORFs_calculations, UORFs_indel_analysis, UORFs_intercistonic_distance, UORFs_ten_nts_after
+
+@pytest.fixture(scope="session")
+def fpath_fasta(fpath_test_dir: str) -> str:
+    return os.path.join(fpath_test_dir, "data", "Homo_sapiens_ENST00000381418_9_sequence_sample.fa")
 
 def test_utr_length(example_uorfs: UORFs):
 

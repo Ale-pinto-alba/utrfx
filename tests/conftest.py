@@ -45,9 +45,5 @@ def fpath_test_dir() -> str:
     return os.path.dirname(__file__)
 
 @pytest.fixture(scope="session")
-def fpath_fasta(fpath_test_dir: str) -> str:
-    return os.path.join(fpath_test_dir, "data", "Homo_sapiens_ENST00000381418_9_sequence_sample.fa")
-
-@pytest.fixture(scope="session")
 def example_uorfs(fpath_fasta: str):
     return UORFs(tx_id="ENST00000381418.9", five_prime_sequence=fpath_fasta)
