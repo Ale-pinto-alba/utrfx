@@ -1,4 +1,5 @@
 import abc
+import typing
 
 class FivePrimeSequence:
     """
@@ -9,7 +10,7 @@ class FivePrimeSequence:
     """
     def __init__(self, tx_id: str, five_prime_sequence: str):
         self._tx_id = tx_id
-        self._five_prime_sequence = five_prime_sequence
+        self._five_prime_sequence = five_prime_sequence.upper()
 
     @property
     def tx_id(self) -> str:
@@ -44,14 +45,16 @@ class FivePrimeSequence:
 
 class UORF:
     """
-    `UORF` represents an uORF cDNA sequence of a transcript. 
+    `UORF` represents an uORF cDNA sequence of a transcript.
+
+    The UORF is upstream of the mORF and they do *not* overlap.
 
     :param tx_id: GENCODE transcript identifier e.g. `ENST00000381418_9`
     :param uorf: uORF nucleotide sequence.
     """
     def __init__(self, tx_id: str, uorf: str):
         self._tx_id = tx_id
-        self._uorf = uorf
+        self._uorf = uorf.upper()
 
     @property
     def tx_id(self) -> str:
@@ -59,16 +62,13 @@ class UORF:
     
     @property
     def uorf_sequence(self) -> str:
-        return self._uorf   
+        return self._uorf
     
     def is_in_five_utr(self, five_utr: FivePrimeSequence) -> bool:
         """
         Check if the uORF belongs to a given 5'UTR sequence.
         """
-        if self._uorf in five_utr.five_prime_sequence:
-            return True
-        else:
-            return False
+        return self._uorf in five_utr.five_prime_sequence.upper()
     
     def __len__(self) -> int:
         return len(self._uorf)  
@@ -82,32 +82,41 @@ class UORF:
         return f"UORF(tx_id= {self.tx_id}, uORF= {self.uorf_sequence})"
 
 
-def extract_next_uorf(five_prime_sequence: FivePrimeSequence) -> UORF:
+def uorf_extractor(five_utr: FivePrimeSequence) -> typing.Collection[UORF]:
     """
-    Extract the next uORF from the 5'UTR sequence and update it.
-    Returns the uORF as a UORF instance or None if no more are found.
+    Take the nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
     """
-    five_sequence = five_prime_sequence.five_prime_sequence.upper()
-    stop_codons = {"TAA", "TAG", "TGA"} 
+    five_sequence = five_utr._five_prime_sequence
+    uorfs = []
+        
+    while "ATG" in five_sequence:  
+        codon_list = []  
 
-    if "ATG" not in five_sequence:
-        return None
-
-    start_index = five_sequence.find("ATG")
-    codon_list = []
-
-    for i in range(start_index, len(five_sequence) - len(five_sequence) % 3, 3):
-        codon = five_sequence[i:i + 3]
-
-        if len(codon) < 3:
+        start_index = five_sequence.find("ATG")
+        if start_index < 0:
+            # No more UORF in the remaining sequence
             break
-
-        codon_list.append(codon)
-
-        if codon in stop_codons:
-            five_sequence = five_sequence[i + 3:]
-            return UORF(tx_id= five_prime_sequence.tx_id, uorf= "".join(codon_list))
     
+        found_stop = False 
+            
+        for i in range(start_index, len(five_sequence) - len(five_sequence) % 3, 3):
+            codon = five_sequence[i:i + 3]
+            assert len(codon) == 3, "Codons must be 3nt long."
+
+            codon_list.append(codon)
+
+            if codon in ["TAA", "TAG", "TGA"]:
+                found_stop = True
+                break
+
+        if found_stop:
+            uorf = UORF(tx_id= five_utr.tx_id, uorf= "".join(codon_list))
+            uorfs.append(uorf)
+
+        five_sequence = five_sequence[start_index + 3:]
+
+    return uorfs
+
 
 def gc_content(uorf: UORF) -> float:
     """
@@ -126,16 +135,16 @@ def gc_content(uorf: UORF) -> float:
         return gc_content
     
 
-def intercistonic_distance(five_utr: FivePrimeSequence, uorf: UORF) -> float:
+def intercistonic_distance(five_utr: FivePrimeSequence, uorf: UORF) -> int:
     """
-    Calculate the intercistonic distance, which is the distance between the uORF stop codon and the mORF start codon, 
-    starting at the nucleotide (included) just after the uORF stop codon.
+    Calculate the intercistonic distance, which is the number of bases located between the uORF stop codon 
+    and the mORF start codon, starting at the nucleotide (included) just after the uORF stop codon.
     """
-    if uorf.is_in_five_utr(five_utr= five_utr) == False or five_utr.tx_id != uorf.tx_id:
+    if five_utr.tx_id != uorf.tx_id or not uorf.is_in_five_utr(five_utr= five_utr):
         raise ValueError("The uORF is not in the given 5'UTR region.")
     else:
         start_index = five_utr.five_prime_sequence.find(uorf.uorf_sequence) + len(uorf.uorf_sequence)
-        intercistonic_distance = float(len(five_utr.five_prime_sequence) - start_index)
+        intercistonic_distance = len(five_utr.five_prime_sequence) - start_index
 
         return intercistonic_distance
 
