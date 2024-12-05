@@ -2,10 +2,9 @@ name: CI
 
 on:
     push:
-      # Uncomment when the repo becomes public.
-      branches: [] # [ develop ]
+      branches: [ develop ]
     pull_request:
-      branches: [] # [ main, develop ]
+      branches: [ main, develop ]
 
 jobs:
     run-ci:
