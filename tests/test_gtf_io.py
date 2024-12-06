@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from utrfx.genome import GenomeBuild, Strand, Region, GenomicRegion, Contig
+from utrfx.genome import GenomeBuild, Strand
 from utrfx.gtf_io import read_gtf_into_txs
 
 class TestGtfIo:
