@@ -16,7 +16,6 @@ class Region:
     @staticmethod
     def from_one_based(contig: str, start: int, end: int) -> "Region":
         """
-
         :param start: one based start coordinate (inclusive)
         """
         return Region(contig=contig, start=start-1, end=end)
@@ -76,6 +75,7 @@ class FiveUTR:
         regions_info = ", ".join([f"({region._contig.ucsc_name}, {region.start}, {region.end}, {region.strand})" for region in self._regions])
         return f"FiveUTR(regions={len(self._regions)} regions: {regions_info})"
 
+    @property
     def regions(self) -> typing.Collection[GenomicRegion]:
         return self._regions
     
@@ -96,6 +96,10 @@ class Transcript:
     @property
     def tx_id(self) -> str:
         return self._tx_id
+    
+    @property
+    def five_utr(self) -> FiveUTR:
+        return self._five_utr
 
     def __repr__(self):
         return f"Transcript(tx_id={self._tx_id}, five_utr={repr(self._five_utr)})"
