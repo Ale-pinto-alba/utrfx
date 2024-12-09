@@ -34,30 +34,14 @@ class TestGtfIo:
         assert one.start == 44_668_712
         assert one.end == 44_668_805
         assert one.strand == Strand.POSITIVE
+
         assert two.contig.name == "22"
         assert two.start == 44_702_491
         assert two.end == 44_702_501
         assert two.strand == Strand.POSITIVE
 
+
         # Negative strand
-        for tx in transcripts:
-            if tx.tx_id == "ENST00000703965.1":
-                our_another_favorite_tx = tx
-                break
-
-        assert our_another_favorite_tx is not None
-        assert len(our_another_favorite_tx._five_utr.regions) == 2
-        three, four = sorted(our_another_favorite_tx.five_utr.regions, key=lambda region: region.start)
-
-        assert three.contig.name == "22"
-        assert three.start == 26_837_999
-        assert three.end == 26_838_057
-        assert three.strand == Strand.NEGATIVE
-        assert four.contig.name == "22"
-        assert four.start == 26_841_401
-        assert four.end == 26_841_576
-        assert four.strand == Strand.NEGATIVE
-  # Negative strand
         for tx in transcripts:
             if tx.tx_id == "ENST00000703965.1":
                 our_another_favorite_tx = tx
