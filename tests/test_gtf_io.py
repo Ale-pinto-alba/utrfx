@@ -57,13 +57,22 @@ class TestGtfIo:
         assert four.start == 26_841_401
         assert four.end == 26_841_576
         assert four.strand == Strand.NEGATIVE
+  # Negative strand
+        for tx in transcripts:
+            if tx.tx_id == "ENST00000703965.1":
+                our_another_favorite_tx = tx
+                break
 
-        three_in_positive_strand = three.with_strand(other= Strand.POSITIVE)
-        three_one_based_start = three_in_positive_strand.start + 1
-        assert three_one_based_start == 23_980_412
-        assert three_in_positive_strand.end == 23_980_469
+        assert our_another_favorite_tx is not None
+        assert len(our_another_favorite_tx.five_utr.regions) == 2
+        three, four = sorted(our_another_favorite_tx.five_utr.regions, key=lambda region: region.start)
 
-        four_in_positive_strand = three.with_strand(other= Strand.POSITIVE)
-        four_one_based_start = four_in_positive_strand.start + 1
-        assert four_one_based_start == 23_980_412
-        assert four_in_positive_strand.end == 23_980_469
+        assert three.contig.name == "22"
+        assert three.start_on_strand(Strand.POSITIVE) == 23_980_411
+        assert three.end_on_strand(Strand.POSITIVE) == 23_980_469
+        assert three.strand == Strand.NEGATIVE
+        
+        assert four.contig.name == "22"
+        assert four.start_on_strand(Strand.POSITIVE) == 23_976_892
+        assert four.end_on_strand(Strand.POSITIVE) == 23_977_067
+        assert four.strand == Strand.NEGATIVE
