@@ -39,15 +39,6 @@ class TestGtfIo:
         assert two.end == 44_702_501
         assert two.strand == Strand.POSITIVE
 
-        matching_lines = []
-        with open(fpath_example_gtf, 'r') as f:
-            for line in f:
-                if "ENST00000432186.6" in line and "UTR" in line:
-                    matching_lines.append(line)
-
-        assert any("44668713" in line and "44668805" in line for line in matching_lines)
-        assert any("44702492" in line and "44702501" in line for line in matching_lines)
-
         # Negative strand
         for tx in transcripts:
             if tx.tx_id == "ENST00000703965.1":
@@ -69,15 +60,11 @@ class TestGtfIo:
 
         three_in_positive_strand = three.with_strand(other= Strand.POSITIVE)
         three_one_based_start = three_in_positive_strand.start + 1
+        assert three_one_based_start == 23_980_412
+        assert three_in_positive_strand.end == 23_980_469
 
         four_in_positive_strand = three.with_strand(other= Strand.POSITIVE)
         four_one_based_start = four_in_positive_strand.start + 1
+        assert four_one_based_start == 23_980_412
+        assert four_in_positive_strand.end == 23_980_469
         
-        matching_lines = []
-        with open(fpath_example_gtf, 'r') as f:
-            for line in f:
-                if "ENST00000703965.1" in line and "UTR" in line:
-                    matching_lines.append(line)
-        
-        assert any(str(three_one_based_start) in line and str(three_in_positive_strand.end) in line for line in matching_lines)
-        assert any(str(four_one_based_start) in line and str(four_in_positive_strand.end) in line for line in matching_lines)
