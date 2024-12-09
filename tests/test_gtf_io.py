@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from utrfx.genome import GenomeBuild, Strand, Region, GenomicRegion, Contig
+from utrfx.genome import GenomeBuild, Strand
 from utrfx.gtf_io import read_gtf_into_txs
 
 class TestGtfIo:
@@ -67,4 +67,3 @@ class TestGtfIo:
         four_one_based_start = four_in_positive_strand.start + 1
         assert four_one_based_start == 23_980_412
         assert four_in_positive_strand.end == 23_980_469
-        

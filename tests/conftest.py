@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from utrfx.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
+from utrfx.genome import GenomeBuild, GRCh38
 
 @pytest.fixture(scope="session")
 def fpath_test_dir() -> str:

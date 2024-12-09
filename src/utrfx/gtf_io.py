@@ -4,7 +4,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from utrfx.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
+from utrfx.genome import GenomeBuild, GenomicRegion, Strand
 from utrfx.model import FiveUTR, Transcript
 
 def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collection[Transcript]:
