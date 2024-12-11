@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 
 from utrfx.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
-from utrfx.model import FiveUTR, Transcript
+from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates
 
-def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collection[Transcript]:
+def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collection[TranscriptCoordinates]:
     """
     Parse a GTF file and return the available transcripts.
     """
@@ -74,7 +74,7 @@ def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collectio
                         temp_utr_5prime_list.append(utr_region)
             
             if temp_utr_5prime_list:
-                transcripts.append(Transcript(tx_id=transcript_id, five_utr=FiveUTR(regions=temp_utr_5prime_list)))
+                transcripts.append(TranscriptCoordinates(tx_id=transcript_id, five_utr=FiveUTRCoordinates(regions=temp_utr_5prime_list)))
 
     return transcripts
 

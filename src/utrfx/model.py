@@ -3,11 +3,13 @@ import typing
 from utrfx.genome import GenomicRegion, Region
 
 
-class FiveUTR:
+class FiveUTRCoordinates:
     """
-    `FiveUTR` is a container for 5'UTR Genomic Regions.
+    `FiveUTRCoordinates` is a container for 5'UTR Genomic Regions.
 
     The length of FiveUTR corresponds to the sum of lengths of all its regions.
+
+    We "kind of" assume all regions are on the same strand.
 
     :param regions: list of Genomic Regions corresponding to the 5'UTRs regions.
     """
@@ -15,6 +17,7 @@ class FiveUTR:
         self,
         regions: typing.Collection[GenomicRegion],
     ):
+        # TODO: Low priority - check the regions are on the same strand
         self._regions = regions
 
     @property
@@ -26,12 +29,12 @@ class FiveUTR:
     
     def __repr__(self):
         regions_info = ", ".join([f"({region._contig.ucsc_name}, {region.start}, {region.end}, {region.strand})" for region in self._regions])
-        return f"FiveUTR(regions={len(self._regions)} regions: {regions_info})"
+        return f"FiveUTRCoordinates(regions={len(self._regions)} regions: {regions_info})"
     
 
-class Transcript:
+class TranscriptCoordinates:
     """
-    `Transcript` represents the 5'UTR Genomic Region(s) of a transcript.
+    `TranscriptCoordinates` represents the 5'UTR Genomic Region(s) of a transcript.
 
     :param tx_id: transcript identifier, e.g. `ENST00000381418`
     :param five_utr: 5'UTR Genomic Region(s). 
@@ -39,7 +42,7 @@ class Transcript:
     def __init__(
         self, 
         tx_id: str, 
-        five_utr: FiveUTR
+        five_utr: FiveUTRCoordinates
     ):
         self._tx_id = tx_id
         self._five_utr = five_utr
@@ -49,65 +52,16 @@ class Transcript:
         return self._tx_id
     
     @property
-    def five_utr(self) -> FiveUTR:
+    def five_utr(self) -> FiveUTRCoordinates:
         return self._five_utr
 
     def __repr__(self):
-        return f"Transcript(tx_id={self._tx_id}, five_utr={repr(self._five_utr)})"
+        return f"TranscriptCoordinates(tx_id={self._tx_id}, five_utr={repr(self._five_utr)})"
 
 
-# class FivePrimeSequence:
-#     """
-#     `FivePrimeSequence` represents the 5'UTR cDNA sequence of a transcript.
-
-#     :param transcript: transcript with its corresponding identifier and 5'UTR Genomic Region(s).
-#     :param five_prime_sequence: 5'UTR nucleotide sequence.
-#     """
-#     def __init__(
-#         self,
-#         transcript: Transcript,
-#         five_prime_sequence: str,
-#     ):
-#         self._transcript = transcript
-#         self._five_prime_sequence = five_prime_sequence.upper()
-
-#     @property
-#     def transcript(self) -> typing.Sequence[GenomicRegion]:
-#         return self._transcript
-
-#     @property
-#     def five_prime_sequence(self) -> str:
-#             return self._five_prime_sequence
-        
-#     # @staticmethod
-#     # def from_fasta(tx: Transcript, fpath: str) -> "FivePrimeSequence":
-#     #     valid_fasta_extensions = (".fa", ".fasta", ".fna", ".ffn", ".faa", ".frn")
-
-#     #     if fpath.endswith(valid_fasta_extensions):
-#     #         with open(fpath) as f:
-#     #             lines = f.readlines()
-#     #             return FivePrimeSequence(
-#     #                 tx= Transcript(tx_id= tx.tx_id, five_utr= tx.five_utr),
-#     #                 five_prime_sequence= "".join(line.strip() for line in lines[1:]),
-#     #             )
-#     #     else:
-#     #         raise ValueError("Unexpected extension.")
-
-#     def __len__(self) -> int:
-#         return len(self._five_prime_sequence)
-    
-#     def __eq__(self, other):
-#         return (isinstance(other, FivePrimeSequence)
-#                 and self._transcript == other._transcript
-#                 and self._five_prime_sequence == other._five_prime_sequence)
-
-#     def __repr__(self) -> str:
-#         return f"FivePrimeSequence(tx_id= {self._transcript.tx_id}, 5'UTRs= {self._transcript.five_utr}, 5'UTR_sequence= {self.five_prime_sequence})"
-    
-
-class UORF:
+class UORFCoordinates:
     """
-    `UORF` represents an uORF of a transcript.
+    `UORFCoordinates` represents an uORF of a transcript.
 
     The UORF is upstream of the mORF and they do *not* overlap.
 
@@ -116,19 +70,23 @@ class UORF:
     """
     def __init__(
         self,
-        five_utr: FiveUTR,
+        five_utr: FiveUTRCoordinates,
         uorf: Region,
     ):
         self._five_utr = five_utr
         self._uorf = uorf
 
+    @property
+    def uorf(self) -> Region:
+        return self._uorf
+
     def __len__(self) -> int:
         return len(self._uorf.end - self._uorf.start)  
 
     def __eq__(self, other):
-        return (isinstance(other, UORF)
+        return (isinstance(other, UORFCoordinates)
                 and self._five_utr== other._five_utr
                 and self._uorf == other._uorf)
     
     def __repr__(self) -> str:
-        return f"UORF(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf})"
+        return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf})"
