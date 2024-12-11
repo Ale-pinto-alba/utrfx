@@ -56,6 +56,7 @@ def test_uorf_ends_out_of_five_prime(five_utr_sequence: str):
 
     assert e.value.args == ("uORF overlaps with the mORF",)
 
+
 @pytest.mark.parametrize(
         "uorf, bases, expected",
         [

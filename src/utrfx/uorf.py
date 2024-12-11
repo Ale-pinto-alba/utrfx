@@ -20,7 +20,7 @@ def download_fasta_from_ensembl(transcript_id: str) -> str:
         print("Timed out")
 
     if response.status_code == 200:
-        lines = response.text.splitlines()  # Split text into lines
+        lines = response.text.splitlines()
         sequence = ''.join(lines[1:])
         return sequence
     else:
