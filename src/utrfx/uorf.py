@@ -3,24 +3,23 @@ import typing
 
 import requests
 
-from utrfx.genome import Region, GenomeBuild, GenomicRegion, Strand, GRCh38
-from utrfx.model import FiveUTR, FivePrimeSequence, UORF, Transcript
+from utrfx.genome import Region
+from utrfx.model import FiveUTR, FivePrimeSequence, UORF
 
-def download_fasta_from_ensembl(transcript_id: str, output_file: str) -> typing.IO:
+def download_fasta_from_ensembl(transcript_id: str) -> str:
     """
     Download a FASTA file containing the cDNA sequence for a given transcript from Ensembl's REST API.
 
     :param transcript_id: Ensembl transcript identifier e.g. `ENST00000381418`
-    :param output_file: the path to save the downloaded FASTA file.
     """
     base_url = f"https://rest.ensembl.org/sequence/id/{transcript_id}?content-type=text/x-fasta"
-
-    response = requests.get(base_url)
+    try:
+        response = requests.get(base_url, timeout= 30)
+    except requests.exceptions.Timeout:
+        print("Timed out")
 
     if response.status_code == 200:
-        with open(output_file, 'w') as f:
-            f.write(response.text)
-        print(f"FASTA file successfully downloaded and saved to {output_file}")
+        return response.text[1:]
     else:
         raise Exception(f"Error: Unable to download FASTA. HTTP Status Code: {response.status_code}")
     
@@ -29,20 +28,20 @@ def get_five_prime_sequence(transcript_sequence: str, five_utrs: FiveUTR) -> str
     """
     Return the 5'UTR cDNA sequence of a given transcript nucleotide sequence.
 
-    :param transcript_sequence: FASTA file with the transcript nucleotide sequence.
+    :param transcript_sequence: transcript nucleotide sequence.
     :param five_utrs: 5'UTR Genomic Region(s).
     """
-    with open(transcript_sequence) as f:
-        lines = f.readlines()
-        sequence = "".join(line.strip() for line in lines[1:])
-        return sequence[:five_utrs.__len__()]
+    return transcript_sequence[:len(five_utrs)]
 
 
-def uorf_extractor(five_utr: FivePrimeSequence) -> typing.Collection[UORF]:
+def uorf_extractor(five_utrs: FiveUTR, five_utr_seq: str) -> typing.Collection[UORF]:
     """
     Take the nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
+
+    :param five_utr: list of Genomic Regions corresponding to the 5'UTRs regions.
+    :param seq: 5'UTR cDNA sequence.
     """
-    five_sequence = five_utr._five_prime_sequence
+    five_sequence = five_utr_seq
     uorfs = []
     start_position = 0
 
@@ -61,7 +60,7 @@ def uorf_extractor(five_utr: FivePrimeSequence) -> typing.Collection[UORF]:
 
         if found_stop:
             uorfs.append(UORF(
-                five_prime=five_utr,
+                five_utr=five_utrs,
                 uorf=Region(start=start_index, end=stop_index)
             ))
             start_position = stop_index  
@@ -71,60 +70,64 @@ def uorf_extractor(five_utr: FivePrimeSequence) -> typing.Collection[UORF]:
     return uorfs
 
 
-def gc_content(uorf: UORF) -> float:
+def gc_content(five_utr_seq: str, uorf: UORF) -> float:
     """
     Get the GC content of an uORF.
     """
-    total = len(uorf.uorf_sequence)
+    total = uorf.__len__()
 
     if total == 0:
-        raise ValueError("Cannot calculate GC content from a 0 nt uORF.")
+        raise ValueError("GC content is 0")
     else:
-        g = uorf.uorf_sequence.count("G")
-        c = uorf.uorf_sequence.count("C")
+        g = five_utr_seq[uorf._uorf.start: uorf._uorf.end].count("G")
+        c = five_utr_seq[uorf._uorf.start: uorf._uorf.end].count("C")
                 
         gc_content = ((g+c) / total) * 100
 
         return gc_content
     
-class GcContentCalculator:
 
-    def __init__(
-        self,
-        uorf: UORF,
-    ):
-        self._uorf = uorf
+def gc_content_n_bases_downstream(five_utr_seq: str, uorf: UORF, bases: int) -> float:
+    """
+    Get the GC content of a `n` bases downstream an uORF.
+    """
+    if bases > (len(five_utr_seq) - uorf._uorf.end):
+        bases = (len(five_utr_seq) - uorf._uorf.end)
+        print(f"Limit exceed, calculating the GC content of the {total} nucleotides after the uORF")
 
-    def gc_content_n_bases_downstream(self, bases: int) -> float:
-        """
-        """
-        if bases > (len(self._uorf._five_prime.five_prime_sequence) - self._uorf._uorf.end):
-            bases = len(self._uorf._five_prime.five_prime_sequence) - self._uorf._uorf.end
-            print(f"Limit exceed, calculating the GC content of the {total} nucleotides after the uORF")
+    region_downstream = Region(start= uorf._uorf.end, end= uorf._uorf.end + bases)
+    total = region_downstream.__len__()
+    if total == 0:
+        return "GC content equals 0"
+    else:
+        g = five_utr_seq[region_downstream.start: region_downstream.end].count("G")
+        c = five_utr_seq[region_downstream.start: region_downstream.end].count("C")
+        gc_content = ((g+c)/total) * 100
 
-        region_downstream = Region(start= self._uorf._uorf.end, end= self._uorf._uorf.end + bases)
-        total = region_downstream.__len__()
-        if total == 0:
-            return "GC content equals 0"
-        else:
-            g = self._uorf._five_prime.five_prime_sequence[region_downstream.start: region_downstream.end].count("G")
-            c = self._uorf._five_prime.five_prime_sequence[region_downstream.start: region_downstream.end].count("C")
-            gc_content = ((g+c)/total) * 100
-
-            return gc_content
+        return gc_content
 
 
-def uorfs_plus_n_nts_downstream_extractor(uorf: UORF, bases: int) -> str:
+def uorfs_plus_n_nts_downstream_extractor(uorf: UORF, five_utr_seq: str, bases: int) -> str:
     """ 
     Get the uORF plus the `n` nucleotides after the uORF stop codon (if possible) for indel analysis.
     """
-    if bases > (len(uorf._five_prime.five_prime_sequence) - uorf._uorf.end):
-            bases = len(uorf._five_prime.five_prime_sequence) - uorf._uorf.end
+    if bases > (len(five_utr_seq) - uorf._uorf.end):
+            bases = len(five_utr_seq) - uorf._uorf.end
             print(f"Limit exceed, taking the uORF plus the {bases} nucleotides downstream")
 
     region_downstream = Region(start= uorf._uorf.end, end= uorf._uorf.end + bases)
 
-    return uorf.uorf_sequence + uorf._five_prime.five_prime_sequence[region_downstream.start: region_downstream.end]
+    return five_utr_seq[uorf._uorf.start:uorf._uorf.end] + five_utr_seq[region_downstream.start: region_downstream.end]
+
+
+def intercistonic_distance(five_utr_seq: str, uorf: UORF) -> int:
+    """
+    Calculate the intercistonic distance, which is the number of bases located between the uORF stop codon 
+    and the mORF start codon, starting at the nucleotide (included) just after the uORF stop codon.
+    """
+    intercistonic_distance = len(five_utr_seq) - uorf._uorf.end
+
+    return intercistonic_distance
 
 
 class KozakSequenceCalculator(metaclass=abc.ABCMeta):

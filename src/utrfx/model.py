@@ -1,11 +1,13 @@
 import typing
     
-from .genome import GenomicRegion, Region
+from utrfx.genome import GenomicRegion, Region
 
 
 class FiveUTR:
     """
     `FiveUTR` is a container for 5'UTR Genomic Regions.
+
+    The length of FiveUTR corresponds to the sum of lengths of all its regions.
 
     :param regions: list of Genomic Regions corresponding to the 5'UTRs regions.
     """
@@ -20,7 +22,7 @@ class FiveUTR:
         return self._regions
 
     def __len__(self) -> int:
-        return 0 if len(self._regions) == 0 else sum(len(region) for region in self._regions)
+        return sum(len(region) for region in self._regions)
     
     def __repr__(self):
         regions_info = ", ".join([f"({region._contig.ucsc_name}, {region.start}, {region.end}, {region.strand})" for region in self._regions])
@@ -31,7 +33,7 @@ class Transcript:
     """
     `Transcript` represents the 5'UTR Genomic Region(s) of a transcript.
 
-    :param tx_id: GENCODE transcript identifier, e.g. `ENST00000381418`
+    :param tx_id: transcript identifier, e.g. `ENST00000381418`
     :param five_utr: 5'UTR Genomic Region(s). 
     """
     def __init__(
@@ -58,7 +60,7 @@ class FivePrimeSequence:
     """
     `FivePrimeSequence` represents the 5'UTR cDNA sequence of a transcript.
 
-    :param transcript: transcript with its GENCODE ID and 5'UTR Genomic Region(s).
+    :param transcript: transcript with its corresponding identifier and 5'UTR Genomic Region(s).
     :param five_prime_sequence: 5'UTR nucleotide sequence.
     """
     def __init__(
@@ -109,37 +111,24 @@ class UORF:
 
     The UORF is upstream of the mORF and they do *not* overlap.
 
-    :param five_prime: transcript with its GENCODE ID, 5'UTR Genomic Region(s) and cDNA sequence.
+    :param transcript: transcript with its corresponding identifier and 5'UTR Genomic Region(s).
     :param uorf: uORF region marked by its start and end nucleotide.
     """
     def __init__(
         self,
-        five_prime: FivePrimeSequence,
+        five_utr: FiveUTR,
         uorf: Region,
     ):
-        self._five_prime = five_prime
+        self._five_utr = five_utr
         self._uorf = uorf
 
-    @property
-    def uorf_sequence(self) -> str:
-        return self._five_prime.five_prime_sequence[self._uorf.start: self._uorf.end]
-
-    def intercistonic_distance(self) -> int:
-        """
-        Calculate the intercistonic distance, which is the number of bases located between the uORF stop codon 
-        and the mORF start codon, starting at the nucleotide (included) just after the uORF stop codon.
-        """
-        intercistonic_distance = len(self._five_prime.five_prime_sequence) - self._uorf.end
-
-        return intercistonic_distance
-
     def __len__(self) -> int:
-        return len(self.uorf_sequence)  
+        return len(self._uorf.end - self._uorf.start)  
 
     def __eq__(self, other):
         return (isinstance(other, UORF)
-                and self._five_prime== other._five_prime
+                and self._five_utr== other._five_utr
                 and self._uorf == other._uorf)
     
     def __repr__(self) -> str:
-        return f"UORF(tx_id= {self._five_prime._transcript.tx_id}, 5'UTRs= {self._five_prime._transcript.five_utr}, 5'UTR_sequence= {self._five_prime.five_prime_sequence}, uORF= {self._uorf})"
+        return f"UORF(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf})"
