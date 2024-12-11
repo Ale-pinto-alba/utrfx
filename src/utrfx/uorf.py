@@ -4,11 +4,12 @@ import typing
 import requests
 
 from utrfx.genome import Region
-from utrfx.model import FiveUTR, FivePrimeSequence, UORF
+from utrfx.model import FiveUTR, UORF
 
 def download_fasta_from_ensembl(transcript_id: str) -> str:
     """
-    Download a FASTA file containing the cDNA sequence for a given transcript from Ensembl's REST API.
+    Download a FASTA file containing the cDNA sequence for a given transcript from Ensembl's REST API and
+    return the only the nucleotide sequence (without the FASTA header).
 
     :param transcript_id: Ensembl transcript identifier e.g. `ENST00000381418`
     """
@@ -19,7 +20,9 @@ def download_fasta_from_ensembl(transcript_id: str) -> str:
         print("Timed out")
 
     if response.status_code == 200:
-        return response.text[1:]
+        lines = response.text.splitlines()  # Split text into lines
+        sequence = ''.join(lines[1:])
+        return sequence
     else:
         raise Exception(f"Error: Unable to download FASTA. HTTP Status Code: {response.status_code}")
     
@@ -73,8 +76,14 @@ def uorf_extractor(five_utrs: FiveUTR, five_utr_seq: str) -> typing.Collection[U
 def gc_content(five_utr_seq: str, uorf: UORF) -> float:
     """
     Get the GC content of an uORF.
+
+    If the number of bases chosen ends beyond the 5'UTR end limit (overlapping with the mORF), the number of bases taken will be clipped to
+    the length between the uORF stop codon and the mORF start codon.
     """
-    total = uorf.__len__()
+    total = uorf._uorf.end - uorf._uorf.start
+
+    if uorf._uorf.end > len(five_utr_seq):
+        raise ValueError("uORF overlaps with the mORF")
 
     if total == 0:
         raise ValueError("GC content is 0")
@@ -90,10 +99,15 @@ def gc_content(five_utr_seq: str, uorf: UORF) -> float:
 def gc_content_n_bases_downstream(five_utr_seq: str, uorf: UORF, bases: int) -> float:
     """
     Get the GC content of a `n` bases downstream an uORF.
+
+    If the number of bases chosen ends beyond the 5'UTR end limit (overlapping with the mORF), the number of bases taken will be clipped to
+    the length between the uORF stop codon and the mORF start codon.
     """
+    if uorf._uorf.end > len(five_utr_seq):
+        raise ValueError("uORF overlaps with the mORF")
+    
     if bases > (len(five_utr_seq) - uorf._uorf.end):
         bases = (len(five_utr_seq) - uorf._uorf.end)
-        print(f"Limit exceed, calculating the GC content of the {total} nucleotides after the uORF")
 
     region_downstream = Region(start= uorf._uorf.end, end= uorf._uorf.end + bases)
     total = region_downstream.__len__()
@@ -110,10 +124,16 @@ def gc_content_n_bases_downstream(five_utr_seq: str, uorf: UORF, bases: int) -> 
 def uorfs_plus_n_nts_downstream_extractor(uorf: UORF, five_utr_seq: str, bases: int) -> str:
     """ 
     Get the uORF plus the `n` nucleotides after the uORF stop codon (if possible) for indel analysis.
+
+    If the number of bases chosen ends beyond the 5'UTR end limit (overlapping with the mORF), the number of bases taken will be clipped to
+    the length between the uORF stop codon and the mORF start codon.
     """
+    if uorf._uorf.end > len(five_utr_seq):
+        raise ValueError("uORF overlaps with the mORF")
+    
     if bases > (len(five_utr_seq) - uorf._uorf.end):
             bases = len(five_utr_seq) - uorf._uorf.end
-            print(f"Limit exceed, taking the uORF plus the {bases} nucleotides downstream")
+
 
     region_downstream = Region(start= uorf._uorf.end, end= uorf._uorf.end + bases)
 
@@ -123,8 +143,11 @@ def uorfs_plus_n_nts_downstream_extractor(uorf: UORF, five_utr_seq: str, bases: 
 def intercistonic_distance(five_utr_seq: str, uorf: UORF) -> int:
     """
     Calculate the intercistonic distance, which is the number of bases located between the uORF stop codon 
-    and the mORF start codon, starting at the nucleotide (included) just after the uORF stop codon.
+    and the mORF start codon.
     """
+    if uorf._uorf.end > len(five_utr_seq):
+        raise ValueError("uORF overlaps with the mORF")
+    
     intercistonic_distance = len(five_utr_seq) - uorf._uorf.end
 
     return intercistonic_distance
