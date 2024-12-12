@@ -90,7 +90,6 @@ def gc_content_n_bases_downstream(five_sequence: str, uorf: UORFCoordinates, bas
     
     assert bases >= 0
     
-    # bla = min()
     if bases > (len(five_sequence) - uorf.uorf.end):
         bases = (len(five_sequence) - uorf.uorf.end)
 
