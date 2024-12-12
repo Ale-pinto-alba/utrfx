@@ -1,17 +1,11 @@
 import typing
     
-from utrfx.genome import GenomicRegion, Region
+from .genome import GenomicRegion, Region
 
 
 class FiveUTRCoordinates:
     """
-    `FiveUTRCoordinates` is a container for 5'UTR Genomic Regions.
-
-    The length of FiveUTR corresponds to the sum of lengths of all its regions.
-
-    We "kind of" assume all regions are on the same strand.
-
-    :param regions: list of Genomic Regions corresponding to the 5'UTRs regions.
+    `FiveUTR` is a container for 5'UTR Genomic Regions.
     """
     def __init__(
         self,
@@ -30,7 +24,7 @@ class FiveUTRCoordinates:
     def __repr__(self):
         regions_info = ", ".join([f"({region._contig.ucsc_name}, {region.start}, {region.end}, {region.strand})" for region in self._regions])
         return f"FiveUTRCoordinates(regions={len(self._regions)} regions: {regions_info})"
-    
+
 
 class TranscriptCoordinates:
     """

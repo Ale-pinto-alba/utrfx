@@ -4,7 +4,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from utrfx.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
+from utrfx.genome import GenomeBuild, GenomicRegion, Strand
 from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates
 
 def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collection[TranscriptCoordinates]:
@@ -45,7 +45,7 @@ def read_gtf_into_txs(fpath: str, genome_build: GenomeBuild) -> typing.Collectio
     for transcript_id, group in utr_df.groupby("transcript_id"):
         contig = genome_build.contig_by_name(group["seqname"].iloc[0])
         if contig is None:
-            print("no contig found")
+            print("No contig found.")
         else:
             start_codon = start_codon_df[start_codon_df["transcript_id"] == transcript_id]
 
@@ -84,4 +84,4 @@ def parse_strand(val: str) -> Strand:
     elif val == "-":
         return Strand.NEGATIVE
     else:
-        raise ValueError()
+        raise ValueError(f"Unknown strand value {val}")
