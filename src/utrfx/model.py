@@ -11,8 +11,9 @@ class FiveUTRCoordinates:
         self,
         regions: typing.Collection[GenomicRegion],
     ):
+        self._regions = tuple(regions)
+        assert all(isinstance(r, GenomicRegion) for r in self._regions)
         # TODO: Low priority - check the regions are on the same strand
-        self._regions = regions
 
     @property
     def regions(self) -> typing.Collection[GenomicRegion]:
@@ -38,7 +39,9 @@ class TranscriptCoordinates:
         tx_id: str, 
         five_utr: FiveUTRCoordinates
     ):
+        assert isinstance(tx_id, str)
         self._tx_id = tx_id
+        assert isinstance(five_utr, FiveUTRCoordinates)
         self._five_utr = five_utr
 
     @property
@@ -67,7 +70,9 @@ class UORFCoordinates:
         five_utr: FiveUTRCoordinates,
         uorf: Region,
     ):
+        assert isinstance(five_utr, FiveUTRCoordinates)
         self._five_utr = five_utr
+        assert isinstance(uorf, Region)
         self._uorf = uorf
 
     @property
