@@ -1,7 +1,8 @@
 import os
 import pytest
 
-from utrfx.genome import GenomeBuild, GRCh38
+from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand
+from utrfx.model import FiveUTRCoordinates
 
 
 def pytest_addoption(parser):
@@ -30,10 +31,22 @@ def pytest_collection_modifyitems(config, items):
 def fpath_test_dir() -> str:
     return os.path.dirname(__file__)
 
+
 @pytest.fixture(scope="session")
 def fpath_data_dir(fpath_test_dir: str) -> str:
     return os.path.join(fpath_test_dir, "data")
 
+
 @pytest.fixture(scope="session")
 def genome_build() -> GenomeBuild:
     return GRCh38
+
+
+@pytest.fixture(scope="session")
+def transcript_fasta() -> str:
+    return "AGTTGCGCTTCTGGCGATGGCGATCAGAGGTCCTGCTGCGCTCTCCGCCGCGCTCTACCTCCATTAGCCGCGCTGCGCGGTGCTGCGCCCTCGCCGGTGCCTCTCTCCTGGGTCCCAGGATCGGCCCCCACCATCCAGGCACGACCCCCTTCCCCGGCCCCTCGGCCTTTCCCCCAACTCGGCCATCTCCGACCCGGGGCGCGTGTTCCCCCCGGCCCGGCGCCTTCTCTCCCTCCGGGGGCACCCGCTCCCTAGCCCCGGCCCGGCCCTCCCCGCGGCGCAGCACGGAGTCTCGGCGTCCCATGGCGCAACCTACGGCCTCGGCCCAGAAGCTGGTGCGGCCGATCCGCGCCGTGTGCCGCATCCTGCAGATCCCGGAGTCCGACCCCTCCAACCTGCGGCCCTAGAGCGCCCCCGCCGCCCCGGGGGAAGGAGAGCGCGAGCGCGCTGAGCAGACAGAGCGGGAGAACGCGTCCTCGCCCGCCGGCCGGGAGGCCCCGGAGCTGGCCCATGGGGAGCAGGCGCCCGGTGCCGGCCACGACGACCGCCACCGCCCGCGCCGCGACCGGCCGGTGAAGCCCAGGTAAGCGCCAGGAGCGCGCCGTCTGGGGACACTCGTGGCGG"
+
+
+@pytest.fixture(scope="session")
+def five_utr() -> FiveUTRCoordinates:
+    return FiveUTRCoordinates([GenomicRegion(contig= GenomeBuild.contig_by_name(GRCh38, "8"), start= 22114419, end= 22115043, strand= Strand.NEGATIVE)])
