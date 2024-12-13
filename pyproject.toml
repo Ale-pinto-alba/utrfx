@@ -26,6 +26,7 @@ dynamic = ["version"]
 dependencies = [
     "numpy >= 1.23, <2.0",
     "pandas >= 2.0.0, <3.0",
+    "requests >= 2.32.0, <3.0",
 ]
 
 [project.optional-dependencies]

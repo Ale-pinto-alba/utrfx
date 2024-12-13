@@ -1,68 +1,99 @@
 import pytest
-import typing
-import os
 
-from utrfx.uorf import UORFsProcessor
+from utrfx.genome import Region
+from utrfx.model import FiveUTRCoordinates, UORFCoordinates
+from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_nts_downstream_extractor, intercistonic_distance
 
-@pytest.fixture(scope="session")
-def fpath_test_dir() -> str:
-    return os.path.dirname(__file__)
 
-@pytest.fixture(scope="session")
-def fpath_fasta(fpath_test_dir: str) -> str:
-    return os.path.join(fpath_test_dir, "data", "Homo_sapiens_ENST00000381418_9_sequence_sample.fa")
-
-@pytest.fixture(scope="session")
-def example_uorfs(fpath_fasta: str):
-    return UORFsProcessor(fpath=fpath_fasta)
-
-def test_utr_length(example_uorfs: UORFsProcessor):
-    assert example_uorfs.five_utr_lenght() == 623
-
-def test_uorfs(example_uorfs: "UORFsProcessor"):
-    for uorf in example_uorfs._uorfs:
-        assert uorf in example_uorfs.tx_sequence         # Check each uORF is in the transcript sequence               
-        assert uorf in example_uorfs.five_utr_sequence   # Check each uORF is in the 5'UTR sequence
-        assert uorf.startswith("ATG")
-        endswith_stop_codon = uorf[-3:] in ["TAA", "TAG", "TGA"]
-        assert endswith_stop_codon == True
-
-def test_uorfs_with_20nt_more(example_uorfs: "UORFsProcessor"):
-    
-    result_20nt_diff = [
-        (len(uorf_plus_20nt) - len(uorf)) <= 20 for uorf, uorf_plus_20nt in zip(example_uorfs.uorfs, example_uorfs.uorfs_with_20nt_more)
-    ] 
-
-    result_contains = [
-        uorf in uorf_plus_20nt for uorf, uorf_plus_20nt in zip(example_uorfs.uorfs, example_uorfs.uorfs_with_20nt_more)
+@pytest.mark.parametrize(
+    "region, expected",
+    [
+        (Region(start=16, end=67), 0.62745098039215684),
+        (Region(start=302, end=407), 0.7047619047619048),
+        (Region(start=510, end=576), 0.8181818181818182),
     ]
+)
+def test_gc_content(
+    transcript_fasta: str, 
+    five_utr: FiveUTRCoordinates, 
+    region: Region, 
+    expected: float,
+):
+    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
 
-    result_length = [
-        len(uorf) < len(uorf_plus_20nt) for uorf, uorf_plus_20nt in zip(example_uorfs.uorfs, example_uorfs.uorfs_with_20nt_more)
-    ]
+    assert gc_content(five_sequence=transcript_fasta, uorf=uorf) == expected
 
-    assert result_20nt_diff == [True, True, True]
-    assert result_contains == [True, True, True]
-    assert result_length == [True, True, True]
 
-def test_number_uorfs(example_uorfs: "UORFsProcessor"):
-    
-    assert example_uorfs.tx_id == "ENST00000381418.9"
-    assert example_uorfs.number_of_uorfs() == 3
+def test_uorf_ends_out_of_five_prime(
+    transcript_fasta: str,
+    five_utr: FiveUTRCoordinates,
+):
+    overlapping_uorf = UORFCoordinates(five_utr=five_utr, uorf=Region(start=700, end=800))
 
-def test_uorfs_lengths(example_uorfs: "UORFsProcessor"):
-    
-    assert example_uorfs.uorfs_lengths() == [51, 105, 66]
+    with pytest.raises(ValueError) as e:
+        gc_content(five_sequence=transcript_fasta, uorf=overlapping_uorf)
 
-def test_gc_content(example_uorfs: "UORFsProcessor"):
+    assert e.value.args == ("uORF overlaps with the mORF",)
 
-    assert example_uorfs.gc_content() == [62.745098039215684, 70.47619047619048, 81.81818181818183]
 
-def test_intercistonic_distances(example_uorfs: "UORFsProcessor"):
-    
-    assert example_uorfs.intercistonic_distance() == [556, 216, 47]
+@pytest.mark.parametrize(
+        "region, bases, expected",
+        [
+            ((Region(start=16, end=67)), 10, 0.9),
+            ((Region(start=302, end=407)), 10, 0.9),
+            ((Region(start=510, end=576)), 10, 0.6),
+            ((Region(start=510, end=576)), 700, 0.7291666666666666), # Number of bases out of 5'UTR region,
+            ((Region(start=510, end=576)), 8500, 0.7291666666666666), # so the GC content remains the same, clipped to 48 bases
+        ]
+)
+def test_gc_content_n_bases_downstream(
+    transcript_fasta: str,
+    five_utr: FiveUTRCoordinates,
+    region: Region,
+    bases: int,
+    expected: float, 
+):
+    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
 
-def test_gc_content_10nt_after_uorf(example_uorfs: "UORFsProcessor"):
+    assert gc_content_n_bases_downstream(five_sequence=transcript_fasta, uorf=uorf, bases=bases) == expected
 
-    assert example_uorfs.gc_content_10nt_after_uorf() == [90.0, 90.0, 70.0]
 
+@pytest.mark.parametrize(
+        "region, bases, expected",
+        [
+            ((Region(start=16, end=67)), 10, 61),
+            ((Region(start=302, end=407)), 10, 115),
+            ((Region(start=510, end=576)), 10, 76),
+            ((Region(start=510, end=576)), 700, 114), 
+            ((Region(start=510, end=576)), 8500, 114),
+        ]
+)
+def test_uorfs_plus_nts_downstream(
+    transcript_fasta: str,
+    five_utr: FiveUTRCoordinates,
+    region: Region,
+    bases: int,
+    expected: float,
+):
+    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
+
+    assert len(uorfs_plus_n_nts_downstream_extractor(five_sequence=transcript_fasta, uorf=uorf, bases=bases)) == expected
+
+
+@pytest.mark.parametrize(
+        "region, expected",
+        [
+            ((Region(start=16, end=67)), 557),
+            ((Region(start=302, end=407)), 217),
+            ((Region(start=510, end=576)), 48),
+        ]
+)
+def test_intercistonic_distances(
+    transcript_fasta: str,
+    five_utr: FiveUTRCoordinates,
+    region: Region,
+    expected: int,
+):
+    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
+
+    assert intercistonic_distance(five_sequence=transcript_fasta, uorf=uorf) == expected
