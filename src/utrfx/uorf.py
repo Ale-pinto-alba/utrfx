@@ -44,7 +44,7 @@ def gc_content_n_bases_downstream(five_sequence: str, uorf: UORFCoordinates, bas
     assert bases >= 0
     
     if bases > (len(five_sequence) - uorf.uorf.end):
-        bases = (len(five_sequence) - uorf.uorf.end)
+        bases = len(five_sequence) - uorf.uorf.end
 
     total = uorf.uorf.end + bases - uorf.uorf.end
     if total == 0:
@@ -65,11 +65,11 @@ def uorfs_plus_n_nts_downstream_extractor(five_sequence: str, uorf: UORFCoordina
     If the number of bases chosen ends beyond the 5'UTR end limit (overlapping with the mORF), the number of bases taken will be clipped to
     the length between the uORF stop codon and the mORF start codon.
     """
-    if uorf._uorf.end > len(five_sequence):
+    if uorf.uorf.end > len(five_sequence):
         raise ValueError("uORF overlaps with the mORF")
     
-    if bases > (len(five_sequence) - uorf._uorf.end):
-        bases = len(five_sequence) - uorf._uorf.end
+    if bases > (len(five_sequence) - uorf.uorf.end):
+        bases = len(five_sequence) - uorf.uorf.end
 
     return five_sequence[uorf.uorf.start: uorf.uorf.end + bases]
 
@@ -79,7 +79,7 @@ def intercistonic_distance(five_sequence: str, uorf: UORFCoordinates) -> int:
     Calculate the intercistonic distance, which is the number of bases located between the uORF stop codon 
     and the mORF start codon.
     """
-    if uorf._uorf.end > len(five_sequence):
+    if uorf.uorf.end > len(five_sequence):
         raise ValueError("uORF overlaps with the mORF")
 
     return len(five_sequence) - uorf.uorf.end

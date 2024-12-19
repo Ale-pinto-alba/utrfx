@@ -48,5 +48,19 @@ def transcript_fasta() -> str:
 
 
 @pytest.fixture(scope="session")
-def five_utr() -> FiveUTRCoordinates:
-    return FiveUTRCoordinates([GenomicRegion(contig= GenomeBuild.contig_by_name(GRCh38, "8"), start= 22114419, end= 22115043, strand= Strand.NEGATIVE)])
+def five_utr(
+    genome_build: GenomeBuild,
+) -> FiveUTRCoordinates:
+    contig = genome_build.contig_by_name("8")
+    assert contig is not None
+
+    return FiveUTRCoordinates(
+        regions=(
+            GenomicRegion(
+                contig=contig,
+                start=22_114_419,
+                end=22_115_043,
+                strand=Strand.NEGATIVE
+            ),
+        )
+    )
