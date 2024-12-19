@@ -21,6 +21,10 @@ def five_utr_sequence(
     return get_five_prime_sequence(transcript_sequence=transcript_fasta, five_utrs=five_utr)
 
 
+def test_five(five_utr_sequence: FiveUTRCoordinates):
+    assert len(five_utr_sequence) == 623
+
+
 def test_uorf_extractor(
     five_utr: FiveUTRCoordinates, 
     five_utr_sequence: str,
