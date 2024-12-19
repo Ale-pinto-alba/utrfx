@@ -23,7 +23,7 @@ class FiveUTRCoordinates:
         return sum(len(region) for region in self._regions)
     
     def __repr__(self):
-        regions_info = ", ".join([f"({region._contig.ucsc_name}, {region.start}, {region.end}, {region.strand})" for region in self._regions])
+        regions_info = ", ".join([f"({region.contig.ucsc_name}, {region.start}, {region.end}, {region.strand})" for region in self._regions])
         return f"FiveUTRCoordinates(regions={len(self._regions)} regions: {regions_info})"
 
 
