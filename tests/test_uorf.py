@@ -14,24 +14,24 @@ from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_n
     ]
 )
 def test_gc_content(
-    transcript_fasta: str, 
+    hbb_five_utr_sequence: str, 
     hbb_five_utr: FiveUTRCoordinates, 
     region: Region, 
     expected: float,
 ):
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
-    assert gc_content(five_sequence=transcript_fasta, uorf=uorf) == expected
+    assert gc_content(five_sequence=hbb_five_utr_sequence, uorf=uorf) == expected
 
 
 def test_uorf_ends_out_of_five_prime(
-    transcript_fasta: str,
+    hbb_five_utr_sequence: str,
     hbb_five_utr: FiveUTRCoordinates,
 ):
     overlapping_uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=Region(start=700, end=800))
 
     with pytest.raises(ValueError) as e:
-        gc_content(five_sequence=transcript_fasta, uorf=overlapping_uorf)
+        gc_content(five_sequence=hbb_five_utr_sequence, uorf=overlapping_uorf)
 
     assert e.value.args == ("uORF overlaps with the mORF",)
 
@@ -47,7 +47,7 @@ def test_uorf_ends_out_of_five_prime(
         ]
 )
 def test_gc_content_n_bases_downstream(
-    transcript_fasta: str,
+    hbb_five_utr_sequence: str,
     hbb_five_utr: FiveUTRCoordinates,
     region: Region,
     bases: int,
@@ -55,7 +55,7 @@ def test_gc_content_n_bases_downstream(
 ):
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
-    assert gc_content_n_bases_downstream(five_sequence=transcript_fasta, uorf=uorf, bases=bases) == expected
+    assert gc_content_n_bases_downstream(five_sequence=hbb_five_utr_sequence, uorf=uorf, bases=bases) == expected
 
 
 @pytest.mark.parametrize(
@@ -69,7 +69,7 @@ def test_gc_content_n_bases_downstream(
         ]
 )
 def test_uorfs_plus_nts_downstream(
-    transcript_fasta: str,
+    hbb_five_utr_sequence: str,
     hbb_five_utr: FiveUTRCoordinates,
     region: Region,
     bases: int,
@@ -77,7 +77,7 @@ def test_uorfs_plus_nts_downstream(
 ):
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
-    assert len(uorfs_plus_n_nts_downstream_extractor(five_sequence=transcript_fasta, uorf=uorf, bases=bases)) == expected
+    assert len(uorfs_plus_n_nts_downstream_extractor(five_sequence=hbb_five_utr_sequence, uorf=uorf, bases=bases)) == expected
 
 
 @pytest.mark.parametrize(
@@ -89,11 +89,11 @@ def test_uorfs_plus_nts_downstream(
         ]
 )
 def test_intercistonic_distances(
-    transcript_fasta: str,
+    hbb_five_utr_sequence: str,
     hbb_five_utr: FiveUTRCoordinates,
     region: Region,
     expected: int,
 ):
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
-    assert intercistonic_distance(five_sequence=transcript_fasta, uorf=uorf) == expected
+    assert intercistonic_distance(five_sequence=hbb_five_utr_sequence, uorf=uorf) == expected

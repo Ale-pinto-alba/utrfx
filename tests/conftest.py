@@ -3,6 +3,7 @@ import pytest
 
 from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand
 from utrfx.model import FiveUTRCoordinates
+from utrfx.util import download_fasta_from_ensembl
 
 
 def pytest_addoption(parser):
@@ -61,14 +62,14 @@ def hbb_five_utr(
         regions=(
             GenomicRegion(
                 contig=contig,
-                start=22_129_170,
-                end=22_129_210,
+                start=22_130_427,
+                end=22_131_010,
                 strand=Strand.POSITIVE
                 ).with_strand(other=Strand.NEGATIVE),
             GenomicRegion(
                 contig=contig,
-                start=22_130_427,
-                end=22_130_427,
+                start=22_129_170,
+                end=22_129_210,
                 strand=Strand.POSITIVE
                 ).with_strand(other=Strand.NEGATIVE),
         )
@@ -76,7 +77,19 @@ def hbb_five_utr(
 
 
 @pytest.fixture(scope="session")
-def transcript_fasta() -> str:
+@pytest.mark.online
+def transcript_fasta():
+    fasta = download_fasta_from_ensembl("ENST00000381418")
+
+    assert fasta.startswith("AGTT")
+
+    assert len(fasta) > 0
+
+    return fasta
+
+
+@pytest.fixture(scope="session")
+def hbb_five_utr_sequence() -> str:
     """
     5'UTR cDNA sequence of the transcript of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`) taken directly from
     the ENSEMBL website.
