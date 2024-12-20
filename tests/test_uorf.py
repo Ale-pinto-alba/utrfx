@@ -15,20 +15,20 @@ from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_n
 )
 def test_gc_content(
     transcript_fasta: str, 
-    five_utr: FiveUTRCoordinates, 
+    hbb_five_utr: FiveUTRCoordinates, 
     region: Region, 
     expected: float,
 ):
-    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
+    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
     assert gc_content(five_sequence=transcript_fasta, uorf=uorf) == expected
 
 
 def test_uorf_ends_out_of_five_prime(
     transcript_fasta: str,
-    five_utr: FiveUTRCoordinates,
+    hbb_five_utr: FiveUTRCoordinates,
 ):
-    overlapping_uorf = UORFCoordinates(five_utr=five_utr, uorf=Region(start=700, end=800))
+    overlapping_uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=Region(start=700, end=800))
 
     with pytest.raises(ValueError) as e:
         gc_content(five_sequence=transcript_fasta, uorf=overlapping_uorf)
@@ -48,12 +48,12 @@ def test_uorf_ends_out_of_five_prime(
 )
 def test_gc_content_n_bases_downstream(
     transcript_fasta: str,
-    five_utr: FiveUTRCoordinates,
+    hbb_five_utr: FiveUTRCoordinates,
     region: Region,
     bases: int,
     expected: float, 
 ):
-    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
+    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
     assert gc_content_n_bases_downstream(five_sequence=transcript_fasta, uorf=uorf, bases=bases) == expected
 
@@ -70,12 +70,12 @@ def test_gc_content_n_bases_downstream(
 )
 def test_uorfs_plus_nts_downstream(
     transcript_fasta: str,
-    five_utr: FiveUTRCoordinates,
+    hbb_five_utr: FiveUTRCoordinates,
     region: Region,
     bases: int,
     expected: float,
 ):
-    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
+    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
     assert len(uorfs_plus_n_nts_downstream_extractor(five_sequence=transcript_fasta, uorf=uorf, bases=bases)) == expected
 
@@ -90,10 +90,10 @@ def test_uorfs_plus_nts_downstream(
 )
 def test_intercistonic_distances(
     transcript_fasta: str,
-    five_utr: FiveUTRCoordinates,
+    hbb_five_utr: FiveUTRCoordinates,
     region: Region,
     expected: int,
 ):
-    uorf = UORFCoordinates(five_utr=five_utr, uorf=region)
+    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
     assert intercistonic_distance(five_sequence=transcript_fasta, uorf=uorf) == expected

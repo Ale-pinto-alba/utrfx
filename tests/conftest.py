@@ -42,39 +42,9 @@ def genome_build() -> GenomeBuild:
     return GRCh38
 
 
-@pytest.fixture(scope="module")
-def first_five_utr_region(
-    genome_build: GenomeBuild
-) -> GenomicRegion:
-    contig = genome_build.contig_by_name("8")
-    assert contig is not None
-
-    return GenomicRegion(
-        contig=contig,
-        start=22_130_427,
-        end=22_131_010,
-        strand=Strand.POSITIVE
-    ).with_strand(other=Strand.NEGATIVE)
-
-
-@pytest.fixture(scope="module")
-def second_five_utr_region(
-    genome_build: GenomeBuild
-) -> GenomicRegion:
-    contig = genome_build.contig_by_name("8")
-    assert contig is not None
-
-    return GenomicRegion(
-        contig=contig,
-        start=22_129_170,
-        end=22_129_210,
-        strand=Strand.POSITIVE
-    ).with_strand(other=Strand.NEGATIVE)
-
-
 @pytest.fixture(scope="session")
-def five_utr(
-    genome_build: GenomeBuild,
+def hbb_five_utr(
+    genome_build: GenomeBuild
 ) -> FiveUTRCoordinates:
     """
     5'UTR Genomic region corresponding to one of the transcripts of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`).
@@ -91,10 +61,16 @@ def five_utr(
         regions=(
             GenomicRegion(
                 contig=contig,
-                start=22_114_419,
-                end=22_115_042,
-                strand=Strand.NEGATIVE
-            ),
+                start=22_129_170,
+                end=22_129_210,
+                strand=Strand.POSITIVE
+                ).with_strand(other=Strand.NEGATIVE),
+            GenomicRegion(
+                contig=contig,
+                start=22_130_427,
+                end=22_130_427,
+                strand=Strand.POSITIVE
+                ).with_strand(other=Strand.NEGATIVE),
         )
     )
 
