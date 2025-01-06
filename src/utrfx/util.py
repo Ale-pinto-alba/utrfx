@@ -13,7 +13,7 @@ def download_fasta_from_ensembl(transcript_id: str, timeout: float = 30.,) -> st
 
     :param transcript_id: Ensembl transcript identifier e.g. `ENST00000381418`
     """
-    base_url = f"https://rest.ensembl.org/sequence/id/{transcript_id}?content-type=text/x-fasta"
+    base_url = f"https://rest.ensembl.org/sequence/id/{transcript_id}?type=cdna&content-type=text/x-fasta"
     
     response = requests.get(base_url, timeout=timeout)
 
@@ -67,3 +67,5 @@ def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.C
             start_position = start_index + 3  
 
     return uorfs
+
+print(download_fasta_from_ensembl("ENST00000381418"))
