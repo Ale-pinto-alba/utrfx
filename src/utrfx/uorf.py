@@ -85,14 +85,8 @@ def intercistronic_distance(five_sequence: str, uorf: UORFCoordinates) -> int:
     return len(five_sequence) - uorf.uorf.end
 
 
-class KozakSequenceCalculator(metaclass=abc.ABCMeta):
-
-    @abc.abstractmethod
-    def compute(self) -> float:
-        pass
-
-
-class FooKozakCalculator(KozakSequenceCalculator):
-    
-    def compute(self) -> float:
-        return 5.
+def cap_five_to_uorf_distance(uorf: UORFCoordinates) -> int:
+    """
+    Calculate the number of bases between the 5' cap and the uORF start codon.
+    """
+    return uorf.uorf.start
