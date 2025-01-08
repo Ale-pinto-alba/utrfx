@@ -90,3 +90,30 @@ def cap_five_to_uorf_distance(uorf: UORFCoordinates) -> int:
     Calculate the number of bases between the 5' cap and the uORF start codon.
     """
     return uorf.uorf.start
+
+
+def kozak_strength_sequence(five_sequence: str, uorf: UORFCoordinates) -> int:
+    """
+    Indicate the difference between a given Kozak sequence and the consensus sequence, based on two residues.
+
+    The Kozak consensus sequence is defined as CCRCCAUGG, with a purine base in position -3 and a guanine base in position +4 
+    as most important for initiation. Initiation sequence contexts are frequently classified as strong (both critical residues match the consensus sequence),
+    as adequate/intermediate (either residue -3 or +4 matches) or as weak (neither residue matches).
+
+    :returns: integer being: 2 (strong), 1 (adequate) or 0 (weak).
+
+    See here: Wethmar K, Smink JJ, Leutz A. Upstream open reading frames: molecular switches in (patho)physiology. 
+    Bioessays. 2010 Oct;32(10):885-93. doi: 10.1002/bies.201000037. Epub 2010 Aug 19. PMID: 20726009; PMCID: PMC3045505.
+    """
+    purines = ["A", "G"]
+    minus_three_residue = five_sequence[uorf.uorf.start - 3]
+    plus_four_residue = five_sequence[uorf.uorf.start + 3]
+
+    if minus_three_residue in purines and plus_four_residue == "G":
+        return 2
+    elif minus_three_residue in purines and plus_four_residue != "G":
+        return 1
+    elif minus_three_residue not in purines and plus_four_residue == "G":
+        return 1
+    else:
+        return 0
