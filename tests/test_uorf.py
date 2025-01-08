@@ -20,8 +20,9 @@ def test_gc_content(
     expected: float,
 ):
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
-
-    assert gc_content(five_sequence=hbb_five_utr_sequence, uorf=uorf) == expected
+    result = gc_content(five_sequence=hbb_five_utr_sequence, uorf=uorf)
+    
+    assert result == pytest.approx(expected, rel=1e-6)
 
 
 def test_uorf_ends_out_of_five_prime(
@@ -54,8 +55,9 @@ def test_gc_content_n_bases_downstream(
     expected: float, 
 ):
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
+    result = gc_content_n_bases_downstream(five_sequence=hbb_five_utr_sequence, uorf=uorf, bases=bases) 
 
-    assert gc_content_n_bases_downstream(five_sequence=hbb_five_utr_sequence, uorf=uorf, bases=bases) == expected
+    assert result == pytest.approx(expected, rel=1e-6)
 
 
 @pytest.mark.parametrize(
