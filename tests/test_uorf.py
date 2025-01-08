@@ -90,7 +90,7 @@ def test_uorfs_plus_nts_downstream(
             ((Region(start=510, end=576)), 47),
         ]
 )
-def test_intercistonic_distances(
+def test_intercistronic_distances(
     hbb_five_utr_sequence: str,
     hbb_five_utr: FiveUTRCoordinates,
     region: Region,
