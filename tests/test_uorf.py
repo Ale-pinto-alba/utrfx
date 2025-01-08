@@ -2,7 +2,7 @@ import pytest
 
 from utrfx.genome import Region
 from utrfx.model import FiveUTRCoordinates, UORFCoordinates
-from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_nts_downstream_extractor, intercistronic_distance, cap_five_to_uorf_distance
+from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_nts_downstream_extractor, intercistronic_distance, cap_five_to_uorf_distance, kozak_strength_sequence
 
 
 @pytest.mark.parametrize(
@@ -115,3 +115,22 @@ def test_five_cap_to_uorf_distance(
     uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
 
     assert cap_five_to_uorf_distance(uorf=uorf) == expected
+
+
+@pytest.mark.parametrize(
+        "region, expected",
+        [
+            ((Region(start=16, end=67)), 2),
+            ((Region(start=302, end=407)), 1),
+            ((Region(start=510, end=576)), 1),
+        ]
+)
+def test_kozak_strength_sequence(
+    hbb_five_utr_sequence: str,
+    hbb_five_utr: FiveUTRCoordinates,
+    region: Region,
+    expected: int,
+):
+    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
+
+    assert kozak_strength_sequence(five_sequence=hbb_five_utr_sequence, uorf=uorf) == expected
