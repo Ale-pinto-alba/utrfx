@@ -92,7 +92,7 @@ def cap_five_to_uorf_distance(uorf: UORFCoordinates) -> int:
     return uorf.uorf.start
 
 
-def kozak_strength_sequence(five_sequence: str, uorf: UORFCoordinates) -> int:
+def kozak_sequence_strength(five_sequence: str, uorf: UORFCoordinates) -> int:
     """
     Indicate the difference between a given Kozak sequence and the consensus sequence, based on two residues.
 
