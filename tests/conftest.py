@@ -3,7 +3,6 @@ import pytest
 
 from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import download_fasta_from_ensembl
 
 
 def pytest_addoption(parser):
