@@ -37,7 +37,7 @@ def download_fasta_from_ensembl(transcript_id: str, timeout: float = 30.,) -> st
         elif strand < 0:
             return cdna_sequence.translate(str.maketrans("ATCG", "TAGC"))[::-1]
         else:
-            return "Strand not found."
+            raise Exception("Not strand found.")
     else:
         response.raise_for_status()
 

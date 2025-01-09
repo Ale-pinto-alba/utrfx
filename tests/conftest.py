@@ -44,7 +44,7 @@ def genome_build() -> GenomeBuild:
 
 
 @pytest.fixture(scope="session")
-def hbb_five_utr(
+def hr_five_utr(
     genome_build: GenomeBuild
 ) -> FiveUTRCoordinates:
     """
@@ -76,7 +76,7 @@ def hbb_five_utr(
     
 
 @pytest.fixture(scope="session")
-def hbb_five_utr_sequence() -> str:
+def hr_five_utr_sequence() -> str:
     """
     5'UTR cDNA sequence (5' -> 3' sense) of the transcript of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`) taken directly from
     the ENSEMBL website.

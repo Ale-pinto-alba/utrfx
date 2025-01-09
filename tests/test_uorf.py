@@ -14,25 +14,25 @@ from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_n
     ]
 )
 def test_gc_content(
-    hbb_five_utr_sequence: str, 
-    hbb_five_utr: FiveUTRCoordinates, 
+    hr_five_utr_sequence: str, 
+    hr_five_utr: FiveUTRCoordinates, 
     region: Region, 
     expected: float,
 ):
-    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
-    result = gc_content(five_sequence=hbb_five_utr_sequence, uorf=uorf)
+    uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
+    result = gc_content(five_sequence=hr_five_utr_sequence, uorf=uorf)
     
     assert result == pytest.approx(expected, rel=1e-6)
 
 
 def test_uorf_ends_out_of_five_prime(
-    hbb_five_utr_sequence: str,
-    hbb_five_utr: FiveUTRCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
 ):
-    overlapping_uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=Region(start=700, end=800))
+    overlapping_uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=Region(start=700, end=800))
 
     with pytest.raises(ValueError) as e:
-        gc_content(five_sequence=hbb_five_utr_sequence, uorf=overlapping_uorf)
+        gc_content(five_sequence=hr_five_utr_sequence, uorf=overlapping_uorf)
 
     assert e.value.args == ("uORF overlaps with the mORF",)
 
@@ -44,18 +44,18 @@ def test_uorf_ends_out_of_five_prime(
             ((Region(start=302, end=407)), 10, ((3+6)/10)),
             ((Region(start=510, end=576)), 10, ((4+3)/10)),
             ((Region(start=510, end=576)), 700, ((18+15)/47)), # Number of bases out of 5'UTR region,
-            ((Region(start=510, end=576)), 8500, ((18+15)/47)), # so the GC content remains the same, clipped to 48 bases
+            ((Region(start=510, end=576)), 8500, ((18+15)/47)), # so the GC content remains the same, clipped to 47 bases
         ]
 )
 def test_gc_content_n_bases_downstream(
-    hbb_five_utr_sequence: str,
-    hbb_five_utr: FiveUTRCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
     region: Region,
     bases: int,
     expected: float, 
 ):
-    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
-    result = gc_content_n_bases_downstream(five_sequence=hbb_five_utr_sequence, uorf=uorf, bases=bases) 
+    uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
+    result = gc_content_n_bases_downstream(five_sequence=hr_five_utr_sequence, uorf=uorf, bases=bases) 
 
     assert result == pytest.approx(expected, rel=1e-6)
 
@@ -71,15 +71,15 @@ def test_gc_content_n_bases_downstream(
         ]
 )
 def test_uorfs_plus_nts_downstream(
-    hbb_five_utr_sequence: str,
-    hbb_five_utr: FiveUTRCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
     region: Region,
     bases: int,
     expected: float,
 ):
-    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
+    uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
 
-    assert len(uorfs_plus_n_nts_downstream_extractor(five_sequence=hbb_five_utr_sequence, uorf=uorf, bases=bases)) == expected
+    assert len(uorfs_plus_n_nts_downstream_extractor(five_sequence=hr_five_utr_sequence, uorf=uorf, bases=bases)) == expected
 
 
 @pytest.mark.parametrize(
@@ -91,11 +91,11 @@ def test_uorfs_plus_nts_downstream(
         ]
 )
 def test_intercistronic_distances(
-    hbb_five_utr_sequence: str,
-    hbb_five_utr: FiveUTRCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
     region: Region,
     expected: int,
 ):
-    uorf = UORFCoordinates(five_utr=hbb_five_utr, uorf=region)
+    uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
 
-    assert intercistronic_distance(five_sequence=hbb_five_utr_sequence, uorf=uorf) == expected
+    assert intercistronic_distance(five_sequence=hr_five_utr_sequence, uorf=uorf) == expected
