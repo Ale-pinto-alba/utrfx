@@ -57,7 +57,6 @@ def gc_content_n_bases_downstream(five_sequence: str, uorf: UORFCoordinates, bas
         return (g+c)/total
 
 
-
 def uorfs_plus_n_nts_downstream_extractor(five_sequence: str, uorf: UORFCoordinates, bases: int) -> str:
     """ 
     Get the uORF plus the `n` nucleotides downstream of the uORF stop codon (if possible) for indel analysis.

@@ -5,17 +5,10 @@ from utrfx.util import download_fasta_from_ensembl, get_five_prime_sequence, uor
 
 
 @pytest.mark.online
-def test_download_fasta_from_ensembl_positive_strand():
+def test_download_fasta_from_ensembl():
      
      assert download_fasta_from_ensembl("ENST00000696628").startswith("GGTCGTTCCC") == True
      assert download_fasta_from_ensembl("ENST00000696628").endswith("CTATTTGAAA") == True
-
-
-@pytest.mark.online
-def test_download_fasta_from_ensembl_negative_strand():
-
-    assert download_fasta_from_ensembl("ENST00000381418").startswith("TTACCCTTAT") == True 
-    assert download_fasta_from_ensembl("ENST00000381418").endswith("AAGCGCAACT") == True 
 
 
 def test_uorf_extractor(

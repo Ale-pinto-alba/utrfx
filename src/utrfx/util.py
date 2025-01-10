@@ -22,22 +22,7 @@ def download_fasta_from_ensembl(transcript_id: str, timeout: float = 30.,) -> st
 
     if response.status_code == 200:
         lines = response.text.splitlines()
-
-        cdna_sequence = ''.join(lines[1:])
-
-        base_url_strand = f"https://rest.ensembl.org/lookup/id/{transcript_id}?content-type=application/json"
-
-        response_strand = requests.get(base_url_strand, timeout=timeout)
-        data = response_strand.json()
-
-        strand = data.get("strand", None)
-        
-        if strand > 0: 
-            return cdna_sequence
-        elif strand < 0:
-            return cdna_sequence.translate(str.maketrans("ATCG", "TAGC"))[::-1]
-        else:
-            raise Exception("Not strand found.")
+        return ''.join(lines[1:])
     else:
         response.raise_for_status()
 
