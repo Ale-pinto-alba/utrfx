@@ -39,7 +39,8 @@ def get_five_prime_sequence(cdna_sequence: str, five_utrs: FiveUTRCoordinates) -
 
 def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.Collection[UORFCoordinates]:
     """
-    Take the cDNA nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
+    Take the cDNA nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available
+    (not those overlapping with the main ORF).
 
     :param five_utr: list of Genomic Regions corresponding to the 5'UTRs regions.
     :param five_sequence: 5'UTR cDNA sequence.
