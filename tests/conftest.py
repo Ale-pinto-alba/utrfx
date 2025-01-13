@@ -77,7 +77,7 @@ def hr_five_utr(
 @pytest.fixture(scope="session")
 def hr_five_utr_sequence() -> str:
     """
-    5'UTR cDNA sequence (5' -> 3' direction) of the transcript of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`) taken directly from
+    5'UTR cDNA sequence of the transcript of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`) taken directly from
     the ENSEMBL website.
     
     see here: https://www.ensembl.org/Homo_sapiens/Transcript/Sequence_cDNA?db=core;g=ENSG00000168453;r=8:22114419-22133384;t=ENST00000381418.
