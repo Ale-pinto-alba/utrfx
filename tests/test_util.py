@@ -1,14 +1,21 @@
 import pytest
 
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import download_fasta_from_ensembl, get_five_prime_sequence, uorf_extractor
+from utrfx.util import fetch_fasta_from_ensembl, uorf_extractor
 
 
 @pytest.mark.online
-def test_download_fasta_from_ensembl():
+def test_fetch_fasta_from_ensembl_positive_strand():
      
-     assert download_fasta_from_ensembl("ENST00000696628").startswith("GGTCGTTCCC") == True
-     assert download_fasta_from_ensembl("ENST00000696628").endswith("CTATTTGAAA") == True
+     assert fetch_fasta_from_ensembl("ENST00000696628").startswith("GGTCGTTCCC") == True
+     assert fetch_fasta_from_ensembl("ENST00000696628").endswith("CTATTTGAAA") == True
+
+
+@pytest.mark.online
+def test_fetch_fasta_from_ensembl_negative_strand():
+     
+     assert fetch_fasta_from_ensembl("ENST00000381418").startswith("AGTTGCGCTT") == True
+     assert fetch_fasta_from_ensembl("ENST00000381418").endswith("ATAAGGGTAA") == True
 
 
 def test_uorf_extractor(
