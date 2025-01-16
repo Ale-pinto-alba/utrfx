@@ -2,7 +2,7 @@ import pytest
 
 from utrfx.genome import Region
 from utrfx.model import FiveUTRCoordinates, UORFCoordinates
-from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_nts_downstream_extractor, intercistronic_distance
+from utrfx.uorf import gc_content, gc_content_n_bases_downstream, uorfs_plus_n_nts_downstream_extractor, intercistronic_distance, cap_five_to_uorf_distance, kozak_sequence_strength
 
 
 @pytest.mark.parametrize(
