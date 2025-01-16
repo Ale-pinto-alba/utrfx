@@ -1,5 +1,3 @@
-import abc
-
 from utrfx.model import UORFCoordinates
 
 
