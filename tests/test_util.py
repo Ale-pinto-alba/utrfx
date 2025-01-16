@@ -1,26 +1,34 @@
 import pytest
 
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import get_five_prime_sequence, uorf_extractor
+from utrfx.util import fetch_cdna_from_ensembl, uorf_extractor
 
 
-@pytest.fixture(scope="module")
-def five_utr_sequence(
-    transcript_fasta: str, 
-    hbb_five_utr: FiveUTRCoordinates,
-) -> str:
-    five_utr_sequence = get_five_prime_sequence(transcript_sequence=transcript_fasta, five_utrs=hbb_five_utr)
-
-    assert len(five_utr_sequence) == 623
-
-    return five_utr_sequence
+@pytest.mark.online
+@pytest.mark.parametrize(
+     "tx_id, start, end, n_bases",
+     [
+          ("ENST00000696628", "GGTCGTTCCC", "CTATTTGAAA", 2_412), # tx on the + strand
+          ("ENST00000381418", "AGTTGCGCTT", "ATAAGGGTAA", 5_474), # tx on the - strand
+     ]
+)
+def test_fetch_cdna_from_ensembl(
+     tx_id: str,
+     start: str,
+     end: str,
+     n_bases: int,
+):
+     cdna = fetch_cdna_from_ensembl(tx_id)
+     assert cdna.startswith(start)
+     assert cdna.endswith(end)
+     assert len(cdna) == n_bases
 
 
 def test_uorf_extractor(
-    hbb_five_utr: FiveUTRCoordinates, 
-    five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates, 
+    hr_five_utr_sequence: str,
 ):
-    uorfs = uorf_extractor(five_utr=hbb_five_utr, five_sequence=five_utr_sequence)
+    uorfs = uorf_extractor(five_utr=hr_five_utr, five_sequence=hr_five_utr_sequence)
     assert len(uorfs) == 3
 
     first_uorf, second_uorf, third_uorf = uorfs

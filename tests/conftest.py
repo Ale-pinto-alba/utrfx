@@ -3,7 +3,6 @@ import pytest
 
 from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import download_fasta_from_ensembl
 
 
 def pytest_addoption(parser):
@@ -44,14 +43,13 @@ def genome_build() -> GenomeBuild:
 
 
 @pytest.fixture(scope="session")
-def hbb_five_utr(
+def hr_five_utr(
     genome_build: GenomeBuild
 ) -> FiveUTRCoordinates:
     """
     5'UTR Genomic region corresponding to one of the transcripts of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`).
 
-    Start coordinate was obtained directly from the ENSEMBL website and the end coordinate was calculated taking into account
-    the 5'UTR length (cDNA sequence, therefore, number of bases, available on the website).
+    Both Genomic Regions were obtained from the chromosome 8 GTF file.
 
     see here: https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=ENSG00000168453;r=8:22114419-22133384;t=ENST00000381418
     """
@@ -74,26 +72,26 @@ def hbb_five_utr(
                 ).with_strand(other=Strand.NEGATIVE),
         )
     )
-
-
-@pytest.fixture(scope="session")
-@pytest.mark.online
-def transcript_fasta():
-    fasta = download_fasta_from_ensembl("ENST00000381418")
-
-    assert fasta.startswith("AGTT")
-
-    assert len(fasta) > 0
-
-    return fasta
-
+    
 
 @pytest.fixture(scope="session")
-def hbb_five_utr_sequence() -> str:
+def hr_five_utr_sequence() -> str:
     """
     5'UTR cDNA sequence of the transcript of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`) taken directly from
     the ENSEMBL website.
     
     see here: https://www.ensembl.org/Homo_sapiens/Transcript/Sequence_cDNA?db=core;g=ENSG00000168453;r=8:22114419-22133384;t=ENST00000381418.
     """
-    return "AGTTGCGCTTCTGGCGATGGCGATCAGAGGTCCTGCTGCGCTCTCCGCCGCGCTCTACCTCCATTAGCCGCGCTGCGCGGTGCTGCGCCCTCGCCGGTGCCTCTCTCCTGGGTCCCAGGATCGGCCCCCACCATCCAGGCACGACCCCCTTCCCCGGCCCCTCGGCCTTTCCCCCAACTCGGCCATCTCCGACCCGGGGCGCGTGTTCCCCCCGGCCCGGCGCCTTCTCTCCCTCCGGGGGCACCCGCTCCCTAGCCCCGGCCCGGCCCTCCCCGCGGCGCAGCACGGAGTCTCGGCGTCCCATGGCGCAACCTACGGCCTCGGCCCAGAAGCTGGTGCGGCCGATCCGCGCCGTGTGCCGCATCCTGCAGATCCCGGAGTCCGACCCCTCCAACCTGCGGCCCTAGAGCGCCCCCGCCGCCCCGGGGGAAGGAGAGCGCGAGCGCGCTGAGCAGACAGAGCGGGAGAACGCGTCCTCGCCCGCCGGCCGGGAGGCCCCGGAGCTGGCCCATGGGGAGCAGGCGCCCGGTGCCGGCCACGACGACCGCCACCGCCCGCGCCGCGACCGGCCGGTGAAGCCCAGGTAAGCGCCAGGAGCGCGCCGTCTGGGGACACTCGTGGCG"
+    return "AGTTGCGCTTCTGGCGATGGCGATCAGAGGTCCTGCTGCGCTCTCCGCCG" \
+        + "CGCTCTACCTCCATTAGCCGCGCTGCGCGGTGCTGCGCCCTCGCCGGTGC" \
+        + "CTCTCTCCTGGGTCCCAGGATCGGCCCCCACCATCCAGGCACGACCCCCT" \
+        + "TCCCCGGCCCCTCGGCCTTTCCCCCAACTCGGCCATCTCCGACCCGGGGC" \
+        + "GCGTGTTCCCCCCGGCCCGGCGCCTTCTCTCCCTCCGGGGGCACCCGCTC" \
+        + "CCTAGCCCCGGCCCGGCCCTCCCCGCGGCGCAGCACGGAGTCTCGGCGTC" \
+        + "CCATGGCGCAACCTACGGCCTCGGCCCAGAAGCTGGTGCGGCCGATCCGC" \
+        + "GCCGTGTGCCGCATCCTGCAGATCCCGGAGTCCGACCCCTCCAACCTGCG" \
+        + "GCCCTAGAGCGCCCCCGCCGCCCCGGGGGAAGGAGAGCGCGAGCGCGCTG" \
+        + "AGCAGACAGAGCGGGAGAACGCGTCCTCGCCCGCCGGCCGGGAGGCCCCG" \
+        + "GAGCTGGCCCATGGGGAGCAGGCGCCCGGTGCCGGCCACGACGACCGCCA" \
+        + "CCGCCCGCGCCGCGACCGGCCGGTGAAGCCCAGGGACCCCCCTCTGGGAG" \
+        + "AGCCCCATGAGGGCAGGAGAGTG"

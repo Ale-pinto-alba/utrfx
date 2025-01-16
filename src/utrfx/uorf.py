@@ -1,5 +1,3 @@
-import abc
-
 from utrfx.model import UORFCoordinates
 
 
@@ -57,7 +55,6 @@ def gc_content_n_bases_downstream(five_sequence: str, uorf: UORFCoordinates, bas
         return (g+c)/total
 
 
-
 def uorfs_plus_n_nts_downstream_extractor(five_sequence: str, uorf: UORFCoordinates, bases: int) -> str:
     """ 
     Get the uORF plus the `n` nucleotides downstream of the uORF stop codon (if possible) for indel analysis.
@@ -76,8 +73,11 @@ def uorfs_plus_n_nts_downstream_extractor(five_sequence: str, uorf: UORFCoordina
 
 def intercistronic_distance(five_sequence: str, uorf: UORFCoordinates) -> int:
     """
-    Calculate the intercistronic distance, which is the number of bases located between the uORF stop codon 
-    and the mORF start codon.
+    Calculate the intercistronic distance, defined as the distance from the uORF stop codon to the mORF start codon.
+
+    See here: Silva, J., Fernandes, R., Romão, L. (2019). Translational Regulation by Upstream Open Reading Frames and Human Diseases. 
+    In: Romão, L. (eds) The mRNA Metabolism in Human Disease. Advances in Experimental Medicine and Biology, vol 1157. 
+    Springer, Cham. https://doi.org/10.1007/978-3-030-19966-1_5
     """
     if uorf.uorf.end > len(five_sequence):
         raise ValueError("uORF overlaps with the mORF")
