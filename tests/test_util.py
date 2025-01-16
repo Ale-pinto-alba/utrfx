@@ -1,21 +1,27 @@
 import pytest
 
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import fetch_fasta_from_ensembl, uorf_extractor
+from utrfx.util import fetch_cdna_from_ensembl, uorf_extractor
 
 
 @pytest.mark.online
-def test_fetch_fasta_from_ensembl_positive_strand():
-     
-     assert fetch_fasta_from_ensembl("ENST00000696628").startswith("GGTCGTTCCC") == True
-     assert fetch_fasta_from_ensembl("ENST00000696628").endswith("CTATTTGAAA") == True
-
-
-@pytest.mark.online
-def test_fetch_fasta_from_ensembl_negative_strand():
-     
-     assert fetch_fasta_from_ensembl("ENST00000381418").startswith("AGTTGCGCTT") == True
-     assert fetch_fasta_from_ensembl("ENST00000381418").endswith("ATAAGGGTAA") == True
+@pytest.mark.parametrize(
+     "tx_id, start, end, n_bases",
+     [
+          ("ENST00000696628", "GGTCGTTCCC", "CTATTTGAAA", 2_412), # tx on the + strand
+          ("ENST00000381418", "AGTTGCGCTT", "ATAAGGGTAA", 5_474), # tx on the - strand
+     ]
+)
+def test_fetch_cdna_from_ensembl(
+     tx_id: str,
+     start: str,
+     end: str,
+     n_bases: int,
+):
+     cdna = fetch_cdna_from_ensembl(tx_id)
+     assert cdna.startswith(start)
+     assert cdna.endswith(end)
+     assert len(cdna) == n_bases
 
 
 def test_uorf_extractor(
