@@ -121,7 +121,7 @@ class GenomeBuild:
 
     .. doctest:: genome-build
 
-    >>> from gpsea.model.genome import GRCh38
+    >>> from utrfx.genome import GRCh38
 
     >>> chr1 = GRCh38.contig_by_name('1')  # by sequence name
 

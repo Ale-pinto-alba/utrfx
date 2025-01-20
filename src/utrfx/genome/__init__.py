@@ -13,10 +13,12 @@ The classes are largely a port of `Svart <https://github.com/exomiser/svart>`_ l
 from ._builds import GRCh37, GRCh38
 from ._genome import Contig, GenomeBuild, GenomeBuildIdentifier, Strand, Stranded, Transposable, GenomicRegion, Region
 from ._genome import transpose_coordinate
+from ._variant import VariantClass, VariantCoordinates
 
 __all__ = [
     "GenomeBuild", "Contig", "GenomeBuildIdentifier", "Region", "GenomicRegion",
     "Strand", "Stranded", "Transposable",
     "transpose_coordinate",
+    "VariantClass", "VariantCoordinates",
     "GRCh37", "GRCh38",
 ]
