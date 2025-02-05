@@ -23,14 +23,36 @@ def fetch_genomic_sequence_from_ensembl(transcript_id: str, timeout: float = 30.
         response.raise_for_status()
 
 
-def get_five_prime_sequence(cdna_sequence: str, five_utrs: FiveUTRCoordinates) -> str:
+def get_five_prime_sequence(genomic_sequence: str, five_utrs: FiveUTRCoordinates) -> str:
     """
-    Return the 5'UTR cDNA sequence of a given transcript nucleotide sequence.
+    Return the 5'UTR DNA sequence of a given transcript nucleotide sequence.
 
     :param transcript_sequence: transcript nucleotide sequence.
     :param five_utrs: 5'UTR Genomic Region(s).
     """
-    return cdna_sequence[:len(five_utrs)]
+    five_utrs_tuples = []
+    five_utr_sequences = []
+
+    for region in five_utrs.regions:
+        five_utrs_tuples.append((region.start, region.end))
+    
+    five_utrs_tuples.sort()
+    previous_end = None
+    accumulative_length = 0
+    for start,end in five_utrs_tuples:
+        five_utr_length = end - start
+        if previous_end is None:
+            five_utr_sequences.append(genomic_sequence[:five_utr_length])
+            previous_end = end
+            accumulative_length += five_utr_length
+
+        elif previous_end is not None:
+            new_start = start - previous_end
+            five_utr_sequences.append(genomic_sequence[accumulative_length + new_start:accumulative_length + new_start + five_utr_length])
+            previous_end = end
+            accumulative_length += five_utr_length
+
+    return ''.join(five_utr_sequences)
 
 
 def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.Collection[UORFCoordinates]:
