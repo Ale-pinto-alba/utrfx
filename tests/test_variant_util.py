@@ -57,3 +57,29 @@ def test_msh2_variant(
     assert len(genomic_sequence) + 1 == len(variant_genomic_sequence)
     assert genomic_sequence[:43] == variant_genomic_sequence[:43]
     assert genomic_sequence[-10:] == variant_genomic_sequence[-10:]
+
+
+@pytest.mark.online
+def test_lpl_variant(
+    lpl_variant: VariantCoordinates, # Variant not in 5'UTR
+    lpl_five_utr: FiveUTRCoordinates,
+):
+    genomic_sequence = fetch_genomic_sequence_from_ensembl("ENST00000650287")
+
+    with pytest.raises(AssertionError) as e:
+        prepare_alt_seq(lpl_variant, genomic_sequence, lpl_five_utr)
+
+    assert e.value.args == ("Variant not in the 5'UTR of the given transcript.",)
+
+
+@pytest.mark.online
+def test_lpl_variant(
+    lpl_fake_variant: VariantCoordinates, # Invented variant that does not match its position
+    lpl_five_utr: FiveUTRCoordinates,
+):
+    genomic_sequence = fetch_genomic_sequence_from_ensembl("ENST00000650287")
+
+    with pytest.raises(AssertionError) as e:
+        prepare_alt_seq(lpl_fake_variant, genomic_sequence, lpl_five_utr)
+
+    assert e.value.args == ("Reference do not match the position.",)
