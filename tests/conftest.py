@@ -3,6 +3,7 @@ import pytest
 
 from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand
 from utrfx.model import FiveUTRCoordinates
+from utrfx.genome._variant import VariantCoordinates
 
 
 def pytest_addoption(parser):
@@ -95,3 +96,155 @@ def hr_five_utr_sequence() -> str:
         + "GAGCTGGCCCATGGGGAGCAGGCGCCCGGTGCCGGCCACGACGACCGCCA" \
         + "CCGCCCGCGCCGCGACCGGCCGGTGAAGCCCAGGGACCCCCCTCTGGGAG" \
         + "AGCCCCATGAGGGCAGGAGAGTG"
+
+
+@pytest.fixture(scope="session")
+def lpl_five_utr(
+    genome_build = GenomeBuild,
+) -> FiveUTRCoordinates:
+    """
+    5'UTR Genomic region corresponding to one of the transcripts of the LPL gene (ENSEMBL transcript ID: `ENST00000650287.1`).
+
+    Genomic Region was obtained from the chromosome 8 GTF file.
+    """
+    contig = genome_build.contig_by_name("8")
+    assert contig is not None
+
+    return FiveUTRCoordinates(
+        regions=(
+            GenomicRegion(
+                contig=contig,
+                start=19_939_252,
+                end=19_939_440,
+                strand=Strand.POSITIVE
+                ),
+        )
+    ) 
+
+
+@pytest.fixture(scope="session")
+def hr_variant(
+    genome_build: GenomeBuild,
+) -> VariantCoordinates:
+    """
+    Single nucleotide variant (8-22130606-A-G) of the HR gene.
+    """
+    return VariantCoordinates.from_vcf_literal(contig=genome_build.contig_by_name("8"), pos= 22_130_606, ref= "A", alt= "G")
+
+
+@pytest.fixture(scope="session")
+def adsl_five_utr(
+    genome_build: GenomeBuild,
+) -> FiveUTRCoordinates:
+    """
+    5'UTR Genomic region corresponding to one of the transcripts of the ADSL gene (ENSEMBL transcript ID: `ENST00000623063.3`).
+
+    Genomic Region was obtained from the chromosome 22 GTF file.
+    """
+    contig = genome_build.contig_by_name("22")
+    assert contig is not None
+
+    return FiveUTRCoordinates(
+        regions=(
+            GenomicRegion(
+                contig=contig,
+                start=40_346_499,
+                end=40_346_558,
+                strand=Strand.POSITIVE
+                ),
+        )
+    )
+
+
+@pytest.fixture(scope="session")
+def adsl_variant(
+    genome_build: GenomeBuild,
+) -> VariantCoordinates:
+    """
+    Single nucleotide variant (22-40346510-T-C) of the ADSL gene.
+    """
+    return VariantCoordinates.from_vcf_literal(contig=genome_build.contig_by_name("22"), pos= 40_346_510, ref= "T", alt= "C")
+
+
+@pytest.fixture(scope="session")
+def msh2_five_utr(
+    genome_build: GenomeBuild,
+) -> FiveUTRCoordinates:
+    """
+    5'UTR Genomic region corresponding to one of the transcripts of the MSH2 gene (ENSEMBL transcript ID: `ENST00000543555.6`).
+
+    Both Genomic Regions were obtained from the chromosome 2 GTF file.
+    """
+    contig = genome_build.contig_by_name("2")
+    assert contig is not None
+
+    return FiveUTRCoordinates(
+        regions=(
+            GenomicRegion(
+                contig=contig,
+                start=47_403_066,
+                end=47_403_175,
+                strand=Strand.POSITIVE
+                ),
+            GenomicRegion(
+                contig=contig,
+                start=47_403_359,
+                end=47_403_389,
+                strand=Strand.POSITIVE
+                ),
+        )
+    )
+
+
+@pytest.fixture(scope="session")
+def msh2_variant(
+    genome_build: GenomeBuild,
+) -> VariantCoordinates:
+    """
+    Insertion variant (2-47403110-G-GA) of the MSH2 gene.
+    """
+    return VariantCoordinates.from_vcf_literal(contig=genome_build.contig_by_name("2"), pos= 47_403_110, ref= "G", alt= "GA")
+
+
+@pytest.fixture(scope="session")
+def lpl_five_utr(
+    genome_build: GenomeBuild,
+) -> FiveUTRCoordinates:
+    """
+    5'UTR Genomic region corresponding to one of the transcripts of the LPL gene (ENSEMBL transcript ID: `ENST00000650287.1`).
+
+    Both Genomic Regions were obtained from the chromosome 8 GTF file.
+    """
+    contig = genome_build.contig_by_name("8")
+    assert contig is not None
+
+    return FiveUTRCoordinates(
+        regions=(
+            GenomicRegion(
+                contig=contig,
+                start=19_939_253,
+                end=19_939_440,
+                strand=Strand.POSITIVE
+                ),
+        )
+    )
+
+
+@pytest.fixture(scope="session")
+def lpl_variant(
+    genome_build: GenomeBuild,
+) -> VariantCoordinates:
+    """
+    Single nucleotide variant (8-19939160-T-G) of the LPL gene.
+    """
+    return VariantCoordinates.from_vcf_literal(contig=genome_build.contig_by_name("8"), pos= 19_939_160, ref= "T", alt= "G")
+
+
+@pytest.fixture(scope="session")
+def lpl_fake_variant(
+    genome_build: GenomeBuild,
+) -> VariantCoordinates:
+    """
+    Fake single variant of the LPL gene.
+    """
+    return VariantCoordinates.from_vcf_literal(contig=genome_build.contig_by_name("8"), pos= 19_939_320, ref= "A", alt= "C")
