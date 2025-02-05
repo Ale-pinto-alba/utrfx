@@ -1,6 +1,6 @@
 import typing
     
-from .genome import GenomicRegion, Region
+from utrfx.genome import GenomicRegion, Region
 
 
 class FiveUTRCoordinates:
