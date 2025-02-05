@@ -6,13 +6,13 @@ from utrfx.genome import Region
 from utrfx.model import FiveUTRCoordinates, UORFCoordinates
 
 
-def fetch_cdna_from_ensembl(transcript_id: str, timeout: float = 30.,) -> str:
+def fetch_genomic_sequence_from_ensembl(transcript_id: str, timeout: float = 30.,) -> str:
     """
-    Download cDNA sequence (spliced mRNA) for a given transcript from Ensembl's REST API.
+    Download the genomic sequence for a given transcript from Ensembl's REST API.
 
     :param transcript_id: Ensembl transcript identifier e.g. `ENST00000381418`
     """
-    base_url_cdna = f"https://rest.ensembl.org/sequence/id/{transcript_id}?type=cdna&content-type=text/x-fasta"
+    base_url_cdna = f"https://rest.ensembl.org/sequence/id/{transcript_id}?type=genomic&content-type=text/x-fasta"
     
     response = requests.get(base_url_cdna, timeout=timeout)
 

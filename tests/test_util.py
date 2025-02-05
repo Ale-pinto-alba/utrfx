@@ -1,7 +1,7 @@
 import pytest
 
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import fetch_cdna_from_ensembl, uorf_extractor
+from utrfx.util import fetch_genomic_sequence_from_ensembl, uorf_extractor
 
 
 @pytest.mark.online
@@ -18,7 +18,7 @@ def test_fetch_cdna_from_ensembl(
      end: str,
      n_bases: int,
 ):
-     cdna = fetch_cdna_from_ensembl(tx_id)
+     cdna = fetch_genomic_sequence_from_ensembl(tx_id)
      assert cdna.startswith(start)
      assert cdna.endswith(end)
      assert len(cdna) == n_bases
