@@ -8,11 +8,11 @@ from utrfx.util import fetch_genomic_sequence_from_ensembl, uorf_extractor
 @pytest.mark.parametrize(
      "tx_id, start, end, n_bases",
      [
-          ("ENST00000696628", "GGTCGTTCCC", "CTATTTGAAA", 2_412), # tx on the + strand
-          ("ENST00000381418", "AGTTGCGCTT", "ATAAGGGTAA", 5_474), # tx on the - strand
+          ("ENST00000696628", "GGTCGTTCCC", "CTATTTGAAA", 14_770), # tx on the + strand
+          ("ENST00000381418", "AGTTGCGCTT", "ATAAGGGTAA", 16_592), # tx on the - strand
      ]
 )
-def test_fetch_cdna_from_ensembl(
+def test_fetch_genomic_sequence_from_ensembl(
      tx_id: str,
      start: str,
      end: str,
