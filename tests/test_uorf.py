@@ -99,3 +99,40 @@ def test_intercistronic_distances(
     uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
 
     assert intercistronic_distance(five_sequence=hr_five_utr_sequence, uorf=uorf) == expected
+
+
+@pytest.mark.parametrize(
+        "region, expected",
+        [
+            ((Region(start=16, end=67)), 16),
+            ((Region(start=302, end=407)), 302),
+            ((Region(start=510, end=576)), 510),
+        ]
+)
+def test_five_cap_to_uorf_distance(
+    hr_five_utr: FiveUTRCoordinates,
+    region: Region,
+    expected: int,
+):
+    uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
+
+    assert cap_five_to_uorf_distance(uorf=uorf) == expected
+
+
+@pytest.mark.parametrize(
+        "region, expected",
+        [
+            ((Region(start=16, end=67)), 2),
+            ((Region(start=302, end=407)), 1),
+            ((Region(start=510, end=576)), 1),
+        ]
+)
+def test_kozak_sequence_strength(
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
+    region: Region,
+    expected: int,
+):
+    uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region)
+
+    assert kozak_sequence_strength(five_sequence=hr_five_utr_sequence, uorf=uorf) == expected
