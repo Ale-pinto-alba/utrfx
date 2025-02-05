@@ -45,14 +45,12 @@ def genome_build() -> GenomeBuild:
 
 @pytest.fixture(scope="session")
 def hr_five_utr(
-    genome_build: GenomeBuild
+    genome_build: GenomeBuild,
 ) -> FiveUTRCoordinates:
     """
     5'UTR Genomic region corresponding to one of the transcripts of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`).
 
     Both Genomic Regions were obtained from the chromosome 8 GTF file.
-
-    see here: https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=ENSG00000168453;r=8:22114419-22133384;t=ENST00000381418
     """
     contig = genome_build.contig_by_name("8")
     assert contig is not None

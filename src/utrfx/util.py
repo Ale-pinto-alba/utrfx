@@ -47,8 +47,8 @@ def get_five_prime_sequence(genomic_sequence: str, five_utrs: FiveUTRCoordinates
             accumulative_length += five_utr_length
 
         elif previous_end is not None:
-            new_start = start - previous_end
-            five_utr_sequences.append(genomic_sequence[accumulative_length + new_start:accumulative_length + new_start + five_utr_length])
+            non_five_utr_region = start - previous_end
+            five_utr_sequences.append(genomic_sequence[accumulative_length + non_five_utr_region:accumulative_length + non_five_utr_region + five_utr_length])
             previous_end = end
             accumulative_length += five_utr_length
 
