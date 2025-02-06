@@ -1,4 +1,6 @@
 import typing
+import os
+import json
     
 from utrfx.genome import GenomicRegion, Region
 
@@ -89,3 +91,26 @@ class UORFCoordinates:
     
     def __repr__(self) -> str:
         return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf})"
+
+
+class Gene_symbol:
+
+    def __init__(
+        self
+    ):
+        self._fpath = fpath
+        self._dict = self.obtain_tx_as_dictionary_from_json(self._fpath)
+
+    @staticmethod
+    def obtain_tx_as_dictionary_from_json(
+        fpath: str,
+    ) -> dict:
+        with open (fpath, "r", encoding="utf-8") as file:
+            return  json.load(file)
+
+    def ensembl_transcript(
+        self,
+        gene_symbol: str,
+    ) -> typing.Optional[str]:
+        assert gene_symbol in self._dict, "Gene not in the dictionary."
+        return self._dict[gene_symbol]
