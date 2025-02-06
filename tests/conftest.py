@@ -1,9 +1,8 @@
 import os
 import pytest
 
-from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand
+from utrfx.genome import GenomicRegion, GenomeBuild, GRCh38, Strand, VariantCoordinates
 from utrfx.model import FiveUTRCoordinates
-from utrfx.genome._variant import VariantCoordinates
 
 
 def pytest_addoption(parser):
