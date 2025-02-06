@@ -82,7 +82,7 @@ class TestPrepareAltSeq:
             regions=(
                 GenomicRegion(
                     TestPrepareAltSeq.CONTIG,
-                    start=15,
+                    start=10,
                     end=25,
                     strand=Strand.POSITIVE,
                 ),
@@ -100,6 +100,9 @@ class TestPrepareAltSeq:
         """
         50 bases corresponding to a fake pre-mRNA sequence
         of a fake transcript.
+
+        The sequence originates from the bases (10,50]
+        of the `TestPrepareAltSeq.CONTIG`.
         """
         # Genomic coordinates (1-based):
         # 
@@ -107,7 +110,7 @@ class TestPrepareAltSeq:
         #       |        |         |         |         |
         #       |                                      |
         #       |     5'UTR (1)    5'UTR (2)           |
-        #       v    vvvvvvvvvv     vvvvv              v
+        #       vvvvvvvvvvvvvvv     vvvvv              v
         return "AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
 
     def test_snp(
