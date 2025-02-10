@@ -36,10 +36,8 @@ def prepare_alt_seq(
                 variant_cdna_pos = cdna_pos + (variant_in_five_utr_strand.start - start)
             
             cdna_pos += five_utr_region_length
-        
-        # assert cdna[variant_cdna_pos] == variant.ref
 
-        return cdna[:variant_cdna_pos] + variant.alt + cdna[variant_cdna_pos + 1:]
+        return cdna[:variant_cdna_pos] + variant.alt + cdna[variant_cdna_pos + len(variant.ref):]
     
     else:
 
@@ -58,6 +56,4 @@ def prepare_alt_seq(
         
         relative_variant_position = len(cdna) - variant_cdna_pos
 
-        # assert cdna[relative_variant_position] == variant.ref.translate(str.maketrans("ATCG", "TAGC"))
-
-        return cdna[:relative_variant_position] + variant.alt + cdna[relative_variant_position + 1:]
+        return cdna[:relative_variant_position] + variant.alt + cdna[relative_variant_position + len(variant.ref):]
