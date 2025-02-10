@@ -33,33 +33,33 @@ class TestPrepareAltSeq:
                 GenomicRegion(
                     TestPrepareAltSeq.CONTIG,
                     start=30,
-                    end=35,
+                    end=55,
                     strand=Strand.POSITIVE,
                 ),
             )
         )
     
     @pytest.fixture(scope="class")
-    def pre_mrna_seq(self) -> str:
+    def cdna_seq(self) -> str:
         """
-        50 bases corresponding to a fake pre-mRNA sequence
-        of a fake transcript.
+        40 bases corresponding to a fake cDNA sequence
+        of the 5'UTR region of a fake transcript.
 
         The sequence originates from the bases (10,50]
         of the `TestPrepareAltSeq.CONTIG`.
         """
         # Genomic coordinates (1-based):
         # 
-        #      11       20        30        40        50
-        #       |        |         |         |         |
-        #       |                                      |
-        #       |     5'UTR (1)    5'UTR (2)           |
-        #       vvvvvvvvvvvvvvv     vvvvv              v
-        return "AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
+        #      11            25    31       40             55
+        #       |             |     |        |              |
+        #       |             |     |                       |
+        #       |  5'UTR (1)  |     |       5'UTR (2)       |
+        #       v             v     v                       v
+        return "AAAAACCCCCGGGGG" + "TTTTTAAAAACCCCCGGGGGTTTTT"
 
     def test_snp(
         self,
-        pre_mrna_seq: str,
+        cdna_seq: str,
         five_utr_coordinates: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "C", "T")
@@ -67,12 +67,12 @@ class TestPrepareAltSeq:
         #                    *
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, pre_mrna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
         assert actual == expected
 
     def test_del(
         self,
-        pre_mrna_seq: str,
+        cdna_seq: str,
         five_utr_coordinates: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "CGG", "C")
@@ -80,12 +80,12 @@ class TestPrepareAltSeq:
         #                    ***
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCCGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, pre_mrna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
         assert actual == expected
 
     def test_ins(
         self,
-        pre_mrna_seq: str,
+        cdna_seq: str,
         five_utr_coordinates: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "C", "CTT")
@@ -93,12 +93,12 @@ class TestPrepareAltSeq:
         #                    *
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCCTTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, pre_mrna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
         assert actual == expected
 
     def test_mnv(
         self,
-        pre_mrna_seq: str,
+        cdna_seq: str,
         five_utr_coordinates: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "CGG", "CA")
@@ -106,7 +106,7 @@ class TestPrepareAltSeq:
         #                    ***
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCCAGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, pre_mrna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
         assert actual == expected
 
     @staticmethod
