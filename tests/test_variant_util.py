@@ -21,7 +21,7 @@ class TestPrepareAltSeq:
     """
 
     @pytest.fixture(scope="class")
-    def five_utr_coordinates(self) -> FiveUTRCoordinates:
+    def five_utr_coordinates_forward(self) -> FiveUTRCoordinates:
         return FiveUTRCoordinates(
             regions=(
                 GenomicRegion(
@@ -50,8 +50,8 @@ class TestPrepareAltSeq:
         """
         # Genomic coordinates (1-based):
         # 
-        #      11            25    31       40             55
-        #       |             |     |        |              |
+        #      11            25    31            45        55
+        #       |             |     |             |         |
         #       |             |     |                       |
         #       |  5'UTR (1)  |     |       5'UTR (2)       |
         #       v             v     v                       v
@@ -60,53 +60,105 @@ class TestPrepareAltSeq:
     def test_snp(
         self,
         cdna_seq: str,
-        five_utr_coordinates: FiveUTRCoordinates,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "C", "T")
 
         #                    *
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
         assert actual == expected
 
     def test_del(
         self,
         cdna_seq: str,
-        five_utr_coordinates: FiveUTRCoordinates,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "CGG", "C")
 
         #                    ***
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCCGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
         assert actual == expected
 
     def test_ins(
         self,
         cdna_seq: str,
-        five_utr_coordinates: FiveUTRCoordinates,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "C", "CTT")
 
         #                    *
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCCTTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
         assert actual == expected
 
     def test_mnv(
         self,
         cdna_seq: str,
-        five_utr_coordinates: FiveUTRCoordinates,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
     ):
         vc = TestPrepareAltSeq.make_variant(20, "CGG", "CA")
 
         #                    ***
         #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
         expected = "AAAAACCCCCAGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates)
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
+        assert actual == expected
+
+    def test_snp_falls_on_second_five_utr_region(
+        self,
+        cdna_seq: str,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
+    ):
+        vc = TestPrepareAltSeq.make_variant(40, "A", "T")
+
+        #                                   *
+        #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
+        expected = "AAAAACCCCCGGGGGTTTTTAAAATCCCCCGGGGGTTTTT"
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
+        assert actual == expected
+
+    def test_del_falls_on_second_five_utr_region(
+        self,
+        cdna_seq: str,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
+    ):
+        vc = TestPrepareAltSeq.make_variant(40, "ACC", "A")
+
+        #                                   *
+        #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
+        expected = "AAAAACCCCCGGGGGTTTTTAAAAACCCGGGGGTTTTT"
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
+        assert actual == expected
+
+    def test_ins_falls_on_second_five_utr_region(
+        self,
+        cdna_seq: str,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
+    ):
+        vc = TestPrepareAltSeq.make_variant(40, "A", "ATT")
+
+        #                                   *
+        #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
+        expected = "AAAAACCCCCGGGGGTTTTTAAAAATTCCCCCGGGGGTTTTT"
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
+        assert actual == expected
+
+    def test_mnv_falls_on_second_five_utr_region(
+        self,
+        cdna_seq: str,
+        five_utr_coordinates_forward: FiveUTRCoordinates,
+    ):
+        vc = TestPrepareAltSeq.make_variant(40, "ACC", "AT")
+
+        #                                   *
+        #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
+        expected = "AAAAACCCCCGGGGGTTTTTAAAAATCCCGGGGGTTTTT"
+        actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
         assert actual == expected
 
     @staticmethod
@@ -121,3 +173,44 @@ class TestPrepareAltSeq:
             ref=ref,
             alt=alt,
         )
+    
+    
+def test_hr_variant_one(
+    hr_variant_one: VariantCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
+):
+    vc = prepare_alt_seq(hr_variant_one, hr_five_utr_sequence, hr_five_utr)
+
+    assert hr_five_utr_sequence[405] == "A"
+    assert vc[405] == "C"
+
+def test_hr_variant_two(
+    hr_variant_two: VariantCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,        
+):
+    vc = prepare_alt_seq(hr_variant_two, hr_five_utr_sequence, hr_five_utr)
+
+    assert hr_five_utr_sequence[321] == "C"
+    assert vc[321] == "T"
+
+def test_hr_variant_three(
+    hr_variant_three: VariantCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,        
+):
+    vc = prepare_alt_seq(hr_variant_three, hr_five_utr_sequence, hr_five_utr)
+
+    assert hr_five_utr_sequence[308] == "C"
+    assert vc[308] == "A"
+
+def test_hr_variant_four(
+    hr_variant_four: VariantCoordinates,
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,        
+):
+    vc = prepare_alt_seq(hr_variant_four, hr_five_utr_sequence, hr_five_utr)
+
+    assert hr_five_utr_sequence[302] == "A"
+    assert vc[302] == "C"
