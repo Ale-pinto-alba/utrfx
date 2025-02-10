@@ -25,7 +25,7 @@ def fetch_cdna_from_ensembl(transcript_id: str, timeout: float = 30.,) -> str:
 
 def get_five_prime_sequence(cdna_sequence: str, five_utrs: FiveUTRCoordinates) -> str:
     """
-    Return the 5'UTR cDNA sequence of a given transcript nucleotide sequence.
+    Return the 5'UTR cDNA sequence of a given transcript nucleotide sequence (spliced mRNA).
 
     :param transcript_sequence: transcript nucleotide sequence.
     :param five_utrs: 5'UTR Genomic Region(s).
