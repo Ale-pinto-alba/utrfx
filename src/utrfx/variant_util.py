@@ -6,6 +6,13 @@ def prepare_alt_seq(
     cdna: str,
     five_utrs: FiveUTRCoordinates,
 ) -> str:
+    """
+    Get the 5'UTR region with an alternative allele from the reference cDNA.
+
+    :param variant: Variant as VariantCoordinates instance.
+    :param cdna: 5'UTR region as cDNA (with reference allele).
+    :param five_utrs: Genomic Regions of the 5'UTR. 
+    """
     five_utrs_tuples = []
     for region in five_utrs.regions:
         five_utrs_tuples.append((region.start, region.end))
