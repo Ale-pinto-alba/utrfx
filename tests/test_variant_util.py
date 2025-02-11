@@ -43,7 +43,7 @@ class TestPrepareAltSeq:
     def cdna_seq(self) -> str:
         """
         40 bases corresponding to a fake cDNA sequence
-        of the 5'UTR region of a fake transcript on the positive strand.
+        of the 5'UTR region of a fake transcript.
 
         The sequence originates from the bases (10,50]
         of the `TestPrepareAltSeq.CONTIG`.
@@ -161,9 +161,8 @@ class TestPrepareAltSeq:
         actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
         assert actual == expected
 
-
     class TestNegativeStrand:
-        
+
         @pytest.fixture(scope="class")
         def five_utr_coordinates_negative(self) -> FiveUTRCoordinates:
             return FiveUTRCoordinates(
@@ -182,13 +181,12 @@ class TestPrepareAltSeq:
                     ),
                 )
             )
-        
+
         @pytest.fixture(scope="class")
         def cdna_seq_negative(self) -> str:
             """
             25 bases corresponding to a fake cDNA sequence
             of the 5'UTR region of a fake transcript on the negative strand.
-
             The sequence originates from the bases
             spanned by (5,15](-) (20,35](-)
             regions of the `TestPrepareAltSeq.CONTIG`.
@@ -238,7 +236,7 @@ class TestPrepareAltSeq:
 
             #               *
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
-            expected = "GGGGTGCCCCCTTTTTAAAAACCCCC"
+            expected = "GGGGGTCCCCCTTTTTAAAAACCCCC"
             actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
             assert actual == expected
 
@@ -247,11 +245,11 @@ class TestPrepareAltSeq:
             cdna_seq_negative: str,
             five_utr_coordinates_negative: FiveUTRCoordinates,
         ):
-            vc = TestPrepareAltSeq.make_variant(70, "GT", "GAC")
+            vc = TestPrepareAltSeq.make_variant(70, "TG", "GAC")
 
-            #                               *
+            #                              **
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
-            expected = "GGGGGCCCCCTTTTTAAAAGTCCCCC"
+            expected = "GGGGGCCCCCTTTTTAAAACTGCCCC"
             actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
             assert actual == expected
 
@@ -277,7 +275,7 @@ def test_hr_variant_one(
     vc = prepare_alt_seq(hr_variant_one, hr_five_utr_sequence, hr_five_utr)
 
     assert hr_five_utr_sequence[405] == "A"
-    assert vc[405] == "C"
+    assert vc[405] == "G"
 
 def test_hr_variant_two(
     hr_variant_two: VariantCoordinates,
@@ -287,7 +285,7 @@ def test_hr_variant_two(
     vc = prepare_alt_seq(hr_variant_two, hr_five_utr_sequence, hr_five_utr)
 
     assert hr_five_utr_sequence[321] == "C"
-    assert vc[321] == "T"
+    assert vc[321] == "A"
 
 def test_hr_variant_three(
     hr_variant_three: VariantCoordinates,
@@ -297,7 +295,7 @@ def test_hr_variant_three(
     vc = prepare_alt_seq(hr_variant_three, hr_five_utr_sequence, hr_five_utr)
 
     assert hr_five_utr_sequence[308] == "C"
-    assert vc[308] == "A"
+    assert vc[308] == "T"
 
 def test_hr_variant_four(
     hr_variant_four: VariantCoordinates,
@@ -307,4 +305,4 @@ def test_hr_variant_four(
     vc = prepare_alt_seq(hr_variant_four, hr_five_utr_sequence, hr_five_utr)
 
     assert hr_five_utr_sequence[302] == "A"
-    assert vc[302] == "C"
+    assert vc[302] == "G"
