@@ -28,8 +28,8 @@ def prepare_alt_seq(
         alt = variant.alt
         variant_region_start = variant.start
     else:
-        ref = variant.ref.translate(str.maketrans("ATCG", "TAGC"))
-        alt = variant.alt.translate(str.maketrans("ATCG", "TAGC"))
+        ref = reverse_complement(variant.ref)
+        alt = reverse_complement(variant.alt)
         variant_region_start = variant.region.with_strand(gene_strand).start
 
     in_variant = any(region.overlaps_with(variant.region) for region in five_utrs.regions)
@@ -75,3 +75,8 @@ def prepare_alt_seq(
         assert cdna[relative_variant_position:relative_variant_position + len(ref)] == ref
 
         return cdna[:relative_variant_position] + alt + cdna[relative_variant_position + len(ref):]
+    
+
+def reverse_complement(seq: str) -> str:
+    
+    return seq.translate(str.maketrans("ATCG", "TAGC"))
