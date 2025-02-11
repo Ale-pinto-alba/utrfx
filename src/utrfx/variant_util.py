@@ -29,7 +29,7 @@ def prepare_alt_seq(
         variant_region_start = variant.start
     else:
         ref = variant.ref.translate(str.maketrans("ATCG", "TAGC"))
-        alt = variant.alt
+        alt = variant.alt.translate(str.maketrans("ATCG", "TAGC"))
         variant_region_start = variant.region.with_strand(gene_strand).start
 
     in_variant = any(region.overlaps_with(variant.region) for region in five_utrs.regions)
