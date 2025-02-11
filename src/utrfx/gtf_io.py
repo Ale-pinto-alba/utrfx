@@ -17,7 +17,7 @@ class GTFio:
     ):
         assert fpath.endswith(".gtf"), "Not a GTF file."
         self._fpath = fpath
-        self._gtf_df = self.gtf_to_dataframe(self._fpath)
+        self._gtf_df = self.gtf_to_dataframe()
 
     def gtf_to_dataframe(self) -> pd.DataFrame:
         """
