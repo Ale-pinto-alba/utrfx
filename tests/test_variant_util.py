@@ -43,7 +43,7 @@ class TestPrepareAltSeq:
     def cdna_seq(self) -> str:
         """
         40 bases corresponding to a fake cDNA sequence
-        of the 5'UTR region of a fake transcript.
+        of the 5'UTR region of a fake transcript on the positive strand.
 
         The sequence originates from the bases (10,50]
         of the `TestPrepareAltSeq.CONTIG`.
@@ -160,6 +160,100 @@ class TestPrepareAltSeq:
         expected = "AAAAACCCCCGGGGGTTTTTAAAAATCCCGGGGGTTTTT"
         actual = prepare_alt_seq(vc, cdna_seq, five_utr_coordinates_forward)
         assert actual == expected
+
+
+    class TestNegativeStrand:
+        
+        @pytest.fixture(scope="class")
+        def five_utr_coordinates_negative(self) -> FiveUTRCoordinates:
+            return FiveUTRCoordinates(
+                regions=(
+                    GenomicRegion(
+                        TestPrepareAltSeq.CONTIG,
+                        start=5,
+                        end=15,
+                        strand=Strand.NEGATIVE,
+                    ),
+                    GenomicRegion(
+                        TestPrepareAltSeq.CONTIG,
+                        start=20,
+                        end=35,
+                        strand=Strand.NEGATIVE,
+                    ),
+                )
+            )
+        
+        @pytest.fixture(scope="class")
+        def cdna_seq_negative(self) -> str:
+            """
+            25 bases corresponding to a fake cDNA sequence
+            of the 5'UTR region of a fake transcript on the negative strand.
+
+            The sequence originates from the bases
+            spanned by (5,15](-) (20,35](-)
+            regions of the `TestPrepareAltSeq.CONTIG`.
+            """
+            # Genomic coordinates (1-based):
+            # 
+            #        5'UTR (1)        5'UTR (2)
+            #       6       15    21            35
+            #       |        |     |             |
+            #       |        |     |             |
+            #       |        |     |             |
+            #       v        v     v             v
+            return "GGGGGCCCCC" + "TTTTTAAAAACCCCC"
+
+        def test_snp(
+            self,
+            cdna_seq_negative: str,
+            five_utr_coordinates_negative: FiveUTRCoordinates,
+        ):
+            vc = TestPrepareAltSeq.make_variant(91, "C", "A")
+
+            #               *
+            #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
+            expected = "GGGGTCCCCCTTTTTAAAAACCCCC"
+            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            assert actual == expected
+
+        def test_del(
+            self,
+            cdna_seq_negative: str,
+            five_utr_coordinates_negative: FiveUTRCoordinates,
+        ):
+            vc = TestPrepareAltSeq.make_variant(91, "CC", "C")
+
+            #              **
+            #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
+            expected = "GGGGCCCCCTTTTTAAAAACCCCC"
+            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            assert actual == expected
+
+        def test_ins(
+            self,
+            cdna_seq_negative: str,
+            five_utr_coordinates_negative: FiveUTRCoordinates,
+        ):
+            vc = TestPrepareAltSeq.make_variant(91, "C", "CA")
+
+            #               *
+            #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
+            expected = "GGGGTGCCCCCTTTTTAAAAACCCCC"
+            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            assert actual == expected
+
+        def test_mnv(
+            self,
+            cdna_seq_negative: str,
+            five_utr_coordinates_negative: FiveUTRCoordinates,
+        ):
+            vc = TestPrepareAltSeq.make_variant(70, "GT", "GAC")
+
+            #                               *
+            #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
+            expected = "GGGGGCCCCCTTTTTAAAAGTCCCCC"
+            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            assert actual == expected
 
     @staticmethod
     def make_variant(
