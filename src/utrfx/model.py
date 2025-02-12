@@ -60,10 +60,11 @@ class UORFCoordinates:
     """
     `UORFCoordinates` represents an uORF of a transcript.
 
-    The UORF is upstream of the mORF and they do *not* overlap.
+    The UORF is upstream of the mORF.
 
     :param transcript: transcript with its corresponding identifier and 5'UTR Genomic Region(s).
     :param uorf: uORF region marked by its start and end nucleotide.
+    :param ouorf: boolean indicating if the uORF overlaps with the mORF.
     """
     def __init__(
         self,
