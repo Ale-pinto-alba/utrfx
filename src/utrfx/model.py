@@ -1,5 +1,4 @@
 import typing
-import os
 import json
     
 from utrfx.genome import GenomicRegion, Region
@@ -93,10 +92,13 @@ class UORFCoordinates:
         return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf})"
 
 
-class Gene_symbol:
-
+class TxperGene:
+    """
+    `TxperGene` represents the canonical transcript of a given gene.
+    """
     def __init__(
-        self
+        self,
+        fpath: str,
     ):
         self._fpath = fpath
         self._dict = self.obtain_tx_as_dictionary_from_json(self._fpath)
@@ -112,5 +114,9 @@ class Gene_symbol:
         self,
         gene_symbol: str,
     ) -> typing.Optional[str]:
-        assert gene_symbol in self._dict, "Gene not in the dictionary."
+        """
+        Retrieve the canonical ENSEMBL transcript if available.
+        """
+        if gene_symbol not in self._dict:
+            raise KeyError("Gene not found in dictionary.")
         return self._dict[gene_symbol]
