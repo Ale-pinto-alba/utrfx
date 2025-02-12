@@ -69,15 +69,22 @@ class UORFCoordinates:
         self,
         five_utr: FiveUTRCoordinates,
         uorf: Region,
+        ouorf: bool,
     ):
         assert isinstance(five_utr, FiveUTRCoordinates)
         self._five_utr = five_utr
         assert isinstance(uorf, Region)
         self._uorf = uorf
+        assert isinstance(ouorf, bool)
+        self._ouorf = ouorf
 
     @property
     def uorf(self) -> Region:
         return self._uorf
+    
+    @property
+    def ouorf(self) -> bool:
+        return self._ouorf
 
     def __len__(self) -> int:
         return len(self._uorf.end - self._uorf.start)  
@@ -88,4 +95,4 @@ class UORFCoordinates:
                 and self._uorf == other._uorf)
     
     def __repr__(self) -> str:
-        return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf})"
+        return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf}, ouORF= {self._ouorf})"
