@@ -107,8 +107,14 @@ class TxperGene:
     def obtain_tx_as_dictionary_from_json(
         fpath: str,
     ) -> dict:
-        with open (fpath, "r", encoding="utf-8") as file:
-            return  json.load(file)
+        """
+        Load transcript data from a JSON file into a dictionary.
+        """
+        try:
+            with open(fpath, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise ValueError(f"Error: {e}")
 
     def ensembl_transcript(
         self,
@@ -117,6 +123,5 @@ class TxperGene:
         """
         Retrieve the canonical ENSEMBL transcript if available.
         """
-        if gene_symbol not in self._dict:
-            raise KeyError("Gene not found in dictionary.")
-        return self._dict[gene_symbol]
+        return self._dict.get(gene_symbol)
+    
