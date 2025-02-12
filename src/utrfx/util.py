@@ -70,6 +70,6 @@ def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.C
                 uorf=Region(start=start_index, end=len(five_sequence)),
                 ouorf= True,
             ))
-            start_position = start_index + 3  
+            start_position = start_index + 1  
 
     return uorfs
