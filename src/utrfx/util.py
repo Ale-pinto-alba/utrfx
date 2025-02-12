@@ -60,10 +60,16 @@ def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.C
         if found_stop:
             uorfs.append(UORFCoordinates(
                 five_utr=five_utr,
-                uorf=Region(start=start_index, end=stop_index)
+                uorf=Region(start=start_index, end=stop_index),
+                ouorf= False,
             ))
             start_position = stop_index  
         else:
+            uorfs.append(UORFCoordinates(
+                five_utr=five_utr,
+                uorf=Region(start=start_index, end=len(five_sequence)),
+                ouorf= True,
+            ))
             start_position = start_index + 3  
 
     return uorfs
