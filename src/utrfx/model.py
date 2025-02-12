@@ -92,7 +92,8 @@ class UORFCoordinates:
     def __eq__(self, other):
         return (isinstance(other, UORFCoordinates)
                 and self._five_utr== other._five_utr
-                and self._uorf == other._uorf)
+                and self._uorf == other._uorf
+                and self._ouorf == other._ouorf)
     
     def __repr__(self) -> str:
         return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf}, ouORF= {self._ouorf})"
