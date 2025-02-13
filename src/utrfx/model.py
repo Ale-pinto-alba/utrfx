@@ -94,7 +94,7 @@ class UORFCoordinates:
 
 class TxperGene:
     """
-    `TxperGene` represents the canonical transcript of a given gene.
+    `TxperGene` provides the canonical transcript of a given gene.
     """
     def __init__(
         self,
