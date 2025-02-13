@@ -29,15 +29,22 @@ def test_uorf_extractor(
     hr_five_utr_sequence: str,
 ):
     uorfs = uorf_extractor(five_utr=hr_five_utr, five_sequence=hr_five_utr_sequence)
-    assert len(uorfs) == 3
+    assert len(uorfs) == 4
 
-    first_uorf, second_uorf, third_uorf = uorfs
+    first_uorf, second_uorf, third_uorf , fourth_uorf = uorfs
 
     assert first_uorf.uorf.start == 16
     assert first_uorf.uorf.end == 67
+    assert first_uorf.ouorf == False
 
     assert second_uorf.uorf.start == 302
     assert second_uorf.uorf.end == 407
+    assert second_uorf.ouorf == False
 
     assert third_uorf.uorf.start == 510
     assert third_uorf.uorf.end == 576
+    assert third_uorf.ouorf == False
+                    
+    assert fourth_uorf.uorf.start == 606
+    assert fourth_uorf.uorf.end == 623
+    assert fourth_uorf.ouorf == True
