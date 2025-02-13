@@ -1,6 +1,7 @@
 import typing
+import json
     
-from .genome import GenomicRegion, Region
+from utrfx.genome import GenomicRegion, Region
 
 
 class FiveUTRCoordinates:
@@ -98,3 +99,37 @@ class UORFCoordinates:
     
     def __repr__(self) -> str:
         return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf}, ouORF= {self._ouorf})"
+
+
+class TxperGene:
+    """
+    `TxperGene` provides the canonical transcript of a given gene.
+    """
+    def __init__(
+        self,
+        fpath: str,
+    ):
+        self._fpath = fpath
+        self._dict = self.obtain_tx_as_dictionary_from_json(self._fpath)
+
+    @staticmethod
+    def obtain_tx_as_dictionary_from_json(
+        fpath: str,
+    ) -> dict:
+        """
+        Load transcript data from a JSON file into a dictionary.
+        """
+        try:
+            with open(fpath, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise ValueError(f"Error: {e}")
+
+    def ensembl_transcript(
+        self,
+        gene_symbol: str,
+    ) -> typing.Optional[str]:
+        """
+        Retrieve the canonical ENSEMBL transcript if available.
+        """
+        return self._dict.get(gene_symbol)
