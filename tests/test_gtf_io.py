@@ -21,7 +21,7 @@ class TestGtfIo:
             gtf_file = GTFio(fpath= fpath_example_gtf)
             transcripts = gtf_file.extract_five_utrs_if_not_explicit(genome_build=genome_build)
 
-            assert len(transcripts) == 1_327
+            assert len(transcripts) == 6
 
             # Positive strand
             for tx in transcripts:
@@ -68,7 +68,7 @@ class TestGtfIo:
         
         @pytest.fixture(scope="class")
         def fpath_example_gtf(self, fpath_data_dir: str) -> str:  
-            return os.path.join(fpath_data_dir,  "Homo_sapiens.GRCh38.113_sample_chr8.gtf")
+            return os.path.join(fpath_data_dir,  "Homo.sapiens.GRCh38_sample_chr8.gtf")
         
         def test_read_gtf_into_txs(
             self,
@@ -78,7 +78,7 @@ class TestGtfIo:
             gtf_file = GTFio(fpath= fpath_example_gtf)
             transcripts = gtf_file.extract_five_utrs_if_explicit(genome_build=genome_build)
 
-            assert len(transcripts) == 3_591
+            assert len(transcripts) == 5
 
             # Positive strand
             for tx in transcripts:
