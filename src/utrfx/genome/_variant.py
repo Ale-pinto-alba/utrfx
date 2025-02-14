@@ -265,10 +265,20 @@ class VariantCoordinates:
             return VariantClass[self.alt[1:-1]]
         else:
             if len(self.ref) > len(self.alt):
-                return VariantClass.DEL
+                if self.alt == self.ref[:len(self.alt)]:
+                    # alt is prefix of ref, hence a DEL
+                    return VariantClass.DEL
+                else:
+                    return VariantClass.MNV
             elif len(self.ref) < len(self.alt):
-                # may also be a duplication, but it's hard to say from this
-                return VariantClass.INS
+                
+                if self.ref == self.alt[:len(self.ref)]:
+                    # ref is prefix of alt, hence a INS.
+                    # However, it may as well be a duplication,
+                    # but it's hard to say from the information on hand.
+                    return VariantClass.INS
+                else:
+                    return VariantClass.MNV
             else:
                 if len(self.ref) == 1:
                     return VariantClass.SNV
