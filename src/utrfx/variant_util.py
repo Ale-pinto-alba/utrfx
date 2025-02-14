@@ -21,7 +21,7 @@ def prepare_alt_seq(
 
     assert variant.region.contig == gene_chrom, "Variant and 5'UTR regions not in the same contig."
 
-    in_variant = any(region.overlaps_with(variant.region.with_strand(gene_strand)) for region in five_utrs.regions)
+    in_variant = any(region.overlaps_with(variant.region) for region in five_utrs.regions)
     assert in_variant is True, "Variant not in the 5'UTR of the given transcript."
 
     if variant.region.strand == gene_strand:
