@@ -1,3 +1,7 @@
+import typing
+
+import pysam
+
 from utrfx.genome import VariantCoordinates, Strand
 from utrfx.model import FiveUTRCoordinates
 
@@ -61,3 +65,32 @@ def prepare_alt_seq(
 
 def reverse_complement(seq: str) -> str:
     return seq.translate(str.maketrans("ATCG", "TAGC"))
+
+
+def obtain_variants_from_gnomad_vcf(
+    vcf_file: str,
+    five_utr: FiveUTRCoordinates,
+) -> typing.Collection[VariantCoordinates]:
+    """
+    Retrieve variants existent in a region from a VCF file of GnomAD.
+
+    We used AF > 0.01 as the threshold to consider it a benign variant.
+    """
+    vcf = pysam.VariantFile(vcf_file)
+    variants_list = []
+
+    for region in five_utr.regions:
+        region_in_forward = region.with_strand(Strand.POSITIVE)
+        for i, rec in enumerate(vcf.fetch()):
+            pos = rec.pos  
+            if region_in_forward.start <= pos <= region_in_forward.end:
+                info = rec.info
+                af_tuple = info.get('AF', None) 
+                af = af_tuple[0]
+                print(af)
+                if af is not None and af > 0.01:
+                    ref = rec.ref  
+                    alts = rec.alts 
+                    alt = alts[0] if alts else None
+                    variants_list.append(VariantCoordinates.from_vcf_literal(contig=region.contig, pos=pos, ref=ref, alt=alt))
+    return variants_list
