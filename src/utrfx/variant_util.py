@@ -87,7 +87,6 @@ def obtain_variants_from_gnomad_vcf(
                 info = rec.info
                 af_tuple = info.get('AF', None) 
                 af = af_tuple[0]
-                print(af)
                 if af is not None and af > 0.01:
                     ref = rec.ref  
                     alts = rec.alts 
