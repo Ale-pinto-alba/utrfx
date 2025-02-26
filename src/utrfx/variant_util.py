@@ -1,4 +1,5 @@
 import typing
+import os
 
 import pysam
 
@@ -76,22 +77,25 @@ class VCFfile:
         self._vcf_file = self._open_vcf()
 
     def _open_vcf(self):
-        return pysam.VariantFile(filename=self._vcf_fpath)
+        index_fpath = self._vcf_fpath + ".tbi"
+        if not os.path.exists(index_fpath):
+            pysam.tabix_index(self._vcf_fpath, preset="vcf")
+        return pysam.VariantFile(self._vcf_fpath, "r")
     
     def retrieve_variants_of_region(
         self, 
         contig: Contig, 
-        region: Region,
+        start: int,
+        end: int,
     ) -> typing.Collection[VariantCoordinates]: 
-        vcf_region = pysam.VariantFile('-', 'w', header=self._vcf_file.header)
         variant_list = []
-        for rec in vcf_region.fetch(contig.ucsc_name, region.start, region.end):
+        for rec in self._vcf_file.fetch(contig.ucsc_name, start, end):
             pos = rec.pos
             ref = rec.ref
             alts = rec.alts 
             if alts[0] is not None:
                 alt = alts[0]
-            variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt= alt))
+            variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
         return variant_list
     
     def close_vcf(self):
