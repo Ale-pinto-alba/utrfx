@@ -82,26 +82,17 @@ class VCFfile:
         self, 
         contig: Contig, 
         region: Region,
-    ) -> pysam.VariantFile: 
+    ) -> typing.Collection[VariantCoordinates]: 
         vcf_region = pysam.VariantFile('-', 'w', header=self._vcf_file.header)
+        variant_list = []
         for rec in vcf_region.fetch(contig.ucsc_name, region.start, region.end):
-            vcf_region.write(rec)
-        return vcf_region
-    
-    @staticmethod
-    def search_variant(
-        vcf_file: pysam.VariantFile,
-        contig: Contig,
-        start: int,
-        end: int,
-    ) -> VariantCoordinates:
-        for rec in vcf_file.fetch(contig=contig.ucsc_name, start=start, stop=end):
             pos = rec.pos
             ref = rec.ref
             alts = rec.alts 
             if alts[0] is not None:
                 alt = alts[0]
-            return VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt= alt)
-        
+            variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt= alt))
+        return variant_list
+    
     def close_vcf(self):
         return self._vcf_file.close()
