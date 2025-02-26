@@ -69,6 +69,9 @@ def reverse_complement(seq: str) -> str:
 
 
 class VCFfile:
+    """
+    `VCFfile` represents a VCF file and allow to search for specific variants within it.
+    """
     def __init__(
         self,
         vcf_fpath: str,
