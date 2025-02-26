@@ -2,7 +2,7 @@ import typing
 
 import pysam
 
-from utrfx.genome import VariantCoordinates, Strand
+from utrfx.genome import VariantCoordinates, Strand, Contig, Region
 from utrfx.model import FiveUTRCoordinates
 
 def prepare_alt_seq(
@@ -67,29 +67,41 @@ def reverse_complement(seq: str) -> str:
     return seq.translate(str.maketrans("ATCG", "TAGC"))
 
 
-def obtain_variants_from_gnomad_vcf(
-    vcf_file: str,
-    five_utr: FiveUTRCoordinates,
-) -> typing.Collection[VariantCoordinates]:
-    """
-    Retrieve variants existent in a region from a VCF file of GnomAD.
+class VCFfile:
+    def __init__(
+        self,
+        vcf_fpath: str,
+    ):
+        self._vcf_fpath = vcf_fpath
+        self._vcf_file = self._open_vcf()
 
-    We used AF > 0.01 as the threshold to consider it a benign variant.
-    """
-    vcf = pysam.VariantFile(vcf_file)
-    variants_list = []
-
-    for region in five_utr.regions:
-        region_in_forward = region.with_strand(Strand.POSITIVE)
-        for i, rec in enumerate(vcf.fetch()):
-            pos = rec.pos  
-            if region_in_forward.start <= pos <= region_in_forward.end:
-                info = rec.info
-                af_tuple = info.get('AF', None) 
-                af = af_tuple[0]
-                if af is not None and af > 0.01:
-                    ref = rec.ref  
-                    alts = rec.alts 
-                    alt = alts[0] if alts else None
-                    variants_list.append(VariantCoordinates.from_vcf_literal(contig=region.contig, pos=pos, ref=ref, alt=alt))
-    return variants_list
+    def _open_vcf(self):
+        return pysam.VariantFile(filename=self._vcf_fpath)
+    
+    def retrieve_variants_of_region(
+        self, 
+        contig: Contig, 
+        region: Region,
+    ) -> pysam.VariantFile: 
+        vcf_region = pysam.VariantFile('-', 'w', header=self._vcf_file.header)
+        for rec in vcf_region.fetch(contig.ucsc_name, region.start, region.end):
+            vcf_region.write(rec)
+        return vcf_region
+    
+    @staticmethod
+    def search_variant(
+        vcf_file: pysam.VariantFile,
+        contig: Contig,
+        start: int,
+        end: int,
+    ) -> VariantCoordinates:
+        for rec in vcf_file.fetch(contig=contig.ucsc_name, start=start, stop=end):
+            pos = rec.pos
+            ref = rec.ref
+            alts = rec.alts 
+            if alts[0] is not None:
+                alt = alts[0]
+            return VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt= alt)
+        
+    def close_vcf(self):
+        return self._vcf_file.close()
