@@ -1,8 +1,10 @@
+import os
 import pytest
+import pysam
 
-from utrfx.variant_util import prepare_alt_seq
+from utrfx.variant_util import prepare_alt_seq, VCFfile
 from utrfx.model import FiveUTRCoordinates
-from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates
+from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild, Region
 
 class TestPrepareAltSeq:
     """
@@ -276,3 +278,21 @@ class TestPrepareAltSeq:
             ref=ref,
             alt=alt,
         )
+    
+
+@pytest.fixture(scope="session")
+def vcf_fpath(fpath_data_dir: str) -> str:
+    return os.path.join(fpath_data_dir, "gnomad.genomes.v4.1.sites.chr8.sample.vcf.gz")
+
+@pytest.fixture(scope="session")
+def vcf_file(vcf_fpath: str) -> VCFfile:
+    return VCFfile(vcf_fpath=vcf_fpath)
+
+
+def test_variants_in_region(genome_build: GenomeBuild, vcf_file: VCFfile):
+    contig = genome_build.contig_by_name("8")
+    variants_list = vcf_file.retrieve_variants_of_region(contig=contig, start=22_130_610, end=22_130_650)
+
+    assert len(variants_list) == 9
+
+    vcf_file.close_vcf()
