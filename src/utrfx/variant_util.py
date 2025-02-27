@@ -3,7 +3,7 @@ import os
 
 import pysam
 
-from utrfx.genome import VariantCoordinates, Strand, Contig, Region
+from utrfx.genome import VariantCoordinates, Strand, Contig
 from utrfx.model import FiveUTRCoordinates
 
 def prepare_alt_seq(
@@ -76,21 +76,42 @@ class VCFfile:
         self,
         vcf_fpath: str,
     ):
-        self._vcf_fpath = vcf_fpath
-        self._vcf_file = self._open_vcf()
+        self._vcf_fpath, self._vcf_tbi_fpath = VCFfile._check_path(vcf_fpath)
+        self._vcf_file = None
+
+    @staticmethod
+    def _check_path(fpath) -> typing.Tuple[str, str]:
+        if os.path.isfile(fpath):
+            index_fpath = fpath + ".tbi"
+            if os.path.isfile(index_fpath):
+                return fpath, index_fpath
+            else:
+                raise ValueError(f"`{index_fpath}` is not a file")
+        else:
+            raise ValueError(f"`{fpath}` is not a file")
 
     def _open_vcf(self):
-        index_fpath = self._vcf_fpath + ".tbi"
-        if not os.path.exists(index_fpath):
-            pysam.tabix_index(self._vcf_fpath, preset="vcf")
-        return pysam.VariantFile(self._vcf_fpath, "r")
+        return pysam.VariantFile(
+            self._vcf_fpath,
+            mode="r",
+            index_filename=self._vcf_tbi_fpath,
+        )
     
+    def __enter__(self) -> "VCFfile":
+        self._vcf_file = self._open_vcf()
+        return self
+    
+    def __exit__(self, _exc_type, _exc_value, _exc_traceback):
+        self._vcf_file.close()
+        self._vcf_file = None
+
     def retrieve_variants_of_region(
         self, 
         contig: Contig, 
         start: int,
         end: int,
     ) -> typing.Collection[VariantCoordinates]: 
+        assert self._vcf_file is not None, "VCFfile must be used as a context manager"
         variant_list = []
         for rec in self._vcf_file.fetch(contig.ucsc_name, start, end):
             pos = rec.pos
@@ -102,4 +123,5 @@ class VCFfile:
         return variant_list
     
     def close_vcf(self):
+        # TODO: remove
         return self._vcf_file.close()
