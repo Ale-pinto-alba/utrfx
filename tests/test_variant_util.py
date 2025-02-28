@@ -280,19 +280,48 @@ class TestPrepareAltSeq:
         )
     
 
-@pytest.fixture(scope="session")
-def vcf_fpath(fpath_data_dir: str) -> str:
-    return os.path.join(fpath_data_dir, "gnomad.genomes.v4.1.sites.chr8.sample.vcf.gz")
+class TestVCFFile:
 
-@pytest.fixture(scope="session")
-def vcf_file(vcf_fpath: str) -> VCFfile:
-    return VCFfile(vcf_fpath=vcf_fpath)
+    @pytest.fixture(scope="class")
+    def vcf_fpath(self, fpath_data_dir: str) -> str:
+        return os.path.join(fpath_data_dir, "gnomad.genomes.v4.1.sites.chr8.sample.vcf.gz")
 
 
-def test_variants_in_region(genome_build: GenomeBuild, vcf_file: VCFfile):
-    contig = genome_build.contig_by_name("8")
-    variants_list = vcf_file.retrieve_variants_of_region(contig=contig, start=22_130_610, end=22_130_650)
+    def test_retrieve_variants_of_region(
+        self,
+        genome_build: GenomeBuild,
+        vcf_fpath: str,
+    ):
+        contig = genome_build.contig_by_name("8")
+        with VCFfile(vcf_fpath) as vcf_fh:
+            variants = vcf_fh.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
 
-    assert len(variants_list) == 9
+        assert len(variants) == 9
+        
+        # We're getting a collection but we'd like to check the first and last variant.
+        # Therefore, let's wrap the collection into a tuple to simplify testing.
+        variants = tuple(variants)
 
-    vcf_file.close_vcf()
+        first = variants[0]
+        assert first.start == 22_130_651
+        assert first.end == 22_130_652
+
+        last = variants[-1]
+        assert last.start == 22_130_691
+        assert last.end == 22_130_692
+
+    def test_raises_if_not_used_as_a_context_manager(
+        self,
+        genome_build: GenomeBuild,
+        vcf_fpath: str,
+    ):
+        vcf = VCFfile(vcf_fpath=vcf_fpath)
+        
+        contig = genome_build.contig_by_name("8")
+        assert contig is not None
+
+        with pytest.raises(AssertionError) as e:
+            _ = vcf.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
+            
+        assert e.value.args == ("VCFfile must be used as a context manager",)
+        
