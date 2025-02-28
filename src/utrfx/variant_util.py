@@ -71,7 +71,10 @@ def reverse_complement(seq: str) -> str:
 class VCFfile:
     """
     `VCFfile` represents a VCF file and allow to search for specific variants within it.
+
+    The object must be used as a context manager to ensure proper resource cleanup.
     """
+
     def __init__(
         self,
         vcf_fpath: str,
@@ -110,7 +113,14 @@ class VCFfile:
         contig: Contig, 
         start: int,
         end: int,
-    ) -> typing.Collection[VariantCoordinates]: 
+    ) -> typing.Collection[VariantCoordinates]:
+        """
+        Get variant for the query region.
+
+        :param contig: the query region contig.
+        :param start: 0-based (excluded) start coordinate of the query region.
+        :param start: 0-based (included) end coordinate of the query region.
+        """
         assert self._vcf_file is not None, "VCFfile must be used as a context manager"
         variant_list = []
         for rec in self._vcf_file.fetch(contig.ucsc_name, start, end):
