@@ -116,10 +116,8 @@ class VCFfile:
         for rec in self._vcf_file.fetch(contig.ucsc_name, start, end):
             pos = rec.pos
             ref = rec.ref
-            alts = rec.alts 
-            if alts[0] is not None:
-                alt = alts[0]
-            variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
+            for alt in rec.alts:
+                variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
         return variant_list
     
     def close_vcf(self):
