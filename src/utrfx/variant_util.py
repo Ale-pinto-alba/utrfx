@@ -129,7 +129,3 @@ class VCFfile:
             for alt in rec.alts:
                 variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
         return variant_list
-    
-    def close_vcf(self):
-        # TODO: remove
-        return self._vcf_file.close()
