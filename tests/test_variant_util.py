@@ -1,6 +1,5 @@
 import os
 import pytest
-import pysam
 
 from utrfx.variant_util import prepare_alt_seq, VCFfile
 from utrfx.model import FiveUTRCoordinates
