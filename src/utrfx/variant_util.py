@@ -42,6 +42,7 @@ def prepare_alt_seq(
 
         five_utrs_tuples_sorted = sorted(five_utrs_tuples)
         cdna_pos = 0
+        variant_cdna_pos = None
         if gene_strand == Strand.POSITIVE:
             for start, end in five_utrs_tuples_sorted:
                 five_utr_region_length = end - start
@@ -50,10 +51,11 @@ def prepare_alt_seq(
                     variant_cdna_pos = cdna_pos + (variant_region_start - start)
                 cdna_pos += five_utr_region_length
             
-            if cdna[variant_cdna_pos:variant_cdna_pos + len(ref)] != ref:
-                return "Reference alleles do not match"
-            else:
-                return cdna[:variant_cdna_pos] + alt + cdna[variant_cdna_pos + len(ref):]
+            if variant_cdna_pos is not None:
+                if cdna[variant_cdna_pos:variant_cdna_pos + len(ref)] != ref:
+                    return "Reference alleles do not match"
+                else:
+                    return cdna[:variant_cdna_pos] + alt + cdna[variant_cdna_pos + len(ref):]
         
         else:
             five_utrs_tuples_sorted_reversed = five_utrs_tuples_sorted[::-1]
@@ -64,11 +66,12 @@ def prepare_alt_seq(
                     variant_cdna_pos = cdna_pos + (end - variant_region_start)
                 cdna_pos += five_utr_region_length
             
-            relative_variant_position = len(cdna) - variant_cdna_pos
-            if cdna[relative_variant_position:relative_variant_position + len(ref)] != ref:
-                return "Reference alleles do not match"
-            else:
-                return cdna[:relative_variant_position] + alt + cdna[relative_variant_position + len(ref):]
+            if variant_cdna_pos is not None:
+                relative_variant_position = len(cdna) - variant_cdna_pos
+                if cdna[relative_variant_position:relative_variant_position + len(ref)] != ref:
+                    return "Reference alleles do not match"
+                else:
+                    return cdna[:relative_variant_position] + alt + cdna[relative_variant_position + len(ref):]
 
 def reverse_complement(seq: str) -> str:
     return seq.translate(str.maketrans("ATCG", "TAGC"))
