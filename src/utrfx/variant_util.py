@@ -184,10 +184,8 @@ class VCFfile:
         assert self._vcf_file is not None, "VCFfile must be used as a context manager"
         for rec in self._vcf_file.fetch(contig.ucsc_name, start, end):
             af = rec.info.get('AF', None)
-            if isinstance(af, list) and len(af) == 1:
+            if len(af) == 1:
                 return af[0] 
-            elif isinstance(af, list):
-                return af  
             else:
                 return af
         return None
