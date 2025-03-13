@@ -169,10 +169,9 @@ class TestPrepareAltSeq:
             five_utr_coordinates_positive: FiveUTRCoordinates,
         ):
             vc = TestPrepareAltSeq.make_variant(100, "C", "T")
-            with pytest.raises(AssertionError) as e:
-                prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            error = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
 
-            assert e.value.args == ("Variant not in the 5'UTR of the given transcript.",)
+            assert error == "Variant not in the 5'UTR of the given transcript"
 
     class TestNegativeStrand:
 
