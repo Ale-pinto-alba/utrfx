@@ -286,13 +286,16 @@ class TestVCFFile:
     def vcf_fpath(self, fpath_data_dir: str) -> str:
         return os.path.join(fpath_data_dir, "gnomad.genomes.v4.1.sites.chr8.sample.vcf.gz")
 
+    @pytest.fixture(scope="class")
+    def contig(self, genome_build: GenomeBuild) -> Contig:
+        return genome_build.contig_by_name("8")
 
     def test_retrieve_variants_of_region(
         self,
-        genome_build: GenomeBuild,
+        contig: Contig,
         vcf_fpath: str,
     ):
-        contig = genome_build.contig_by_name("8")
+        # contig = genome_build.contig_by_name("8")
         with VCFfile(vcf_fpath) as vcf_fh:
             variants = vcf_fh.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
 
@@ -309,6 +312,19 @@ class TestVCFFile:
         last = variants[-1]
         assert last.start == 22_130_691
         assert last.end == 22_130_692
+
+    def test_get_allele_frequency(
+        self,
+        contig: Contig,
+        vcf_fpath: str,
+    ):
+        with VCFfile(vcf_fpath) as vcf_fh:
+
+            af = vcf_fh.get_allele_frequency(contig=contig, start=22_130_650, end=22_130_651)     
+            assert af == pytest.approx(6.5e-06, abs=1e-7)
+
+            af = vcf_fh.get_allele_frequency(contig=contig, start=22_130_655, end=22_130_657)
+            assert af == None
 
     def test_raises_if_not_used_as_a_context_manager(
         self,

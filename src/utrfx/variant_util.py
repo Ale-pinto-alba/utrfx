@@ -129,3 +129,27 @@ class VCFfile:
             for alt in rec.alts:
                 variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
         return variant_list
+    
+    def get_allele_frequency(
+        self,
+        contig: Contig, 
+        start: int,
+        end: int,
+    ) -> typing.Optional[float]:
+        """
+        Get the allele frequency for the specified region.
+
+        :param contig: the query region contig.
+        :param start: 0-based (exclusive) start coordinate of the query region.
+        :param end: 0-based (inclusive) end coordinate of the query region.
+        """
+        assert self._vcf_file is not None, "VCFfile must be used as a context manager"
+        for rec in self._vcf_file.fetch(contig.ucsc_name, start, end):
+            af = rec.info.get('AF', None)
+            if isinstance(af, list) and len(af) == 1:
+                return af[0] 
+            elif isinstance(af, list):
+                return af  
+            else:
+                return af
+        return None
