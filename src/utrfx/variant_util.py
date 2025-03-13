@@ -24,11 +24,12 @@ def prepare_alt_seq(
         gene_chrom = region.contig
         gene_strand = region.strand
 
-    assert variant.region.contig == gene_chrom, "Variant and 5'UTR regions not in the same contig."
+    if variant.region.contig != gene_chrom: 
+        raise MismatchedContigsError()
 
     in_variant = any(region.overlaps_with(variant.region) for region in five_utrs.regions)
     if in_variant is not True:
-        return "Variant not in the 5'UTR of the given transcript"
+        raise VariantNotIn5UTRError()
     else:
 
         if variant.region.strand == gene_strand:
@@ -53,7 +54,7 @@ def prepare_alt_seq(
             
             if variant_cdna_pos is not None:
                 if cdna[variant_cdna_pos:variant_cdna_pos + len(ref)] != ref:
-                    return "Reference alleles do not match"
+                    raise ReferenceMismatchError()
                 else:
                     return cdna[:variant_cdna_pos] + alt + cdna[variant_cdna_pos + len(ref):]
         
@@ -69,12 +70,40 @@ def prepare_alt_seq(
             if variant_cdna_pos is not None:
                 relative_variant_position = len(cdna) - variant_cdna_pos
                 if cdna[relative_variant_position:relative_variant_position + len(ref)] != ref:
-                    return "Reference alleles do not match"
+                    raise ReferenceMismatchError()
                 else:
                     return cdna[:relative_variant_position] + alt + cdna[relative_variant_position + len(ref):]
 
 def reverse_complement(seq: str) -> str:
     return seq.translate(str.maketrans("ATCG", "TAGC"))
+
+
+class VariantException(Exception):
+    pass
+
+class VariantNotIn5UTRError(VariantException):
+    def __init__(
+        self, 
+        error = "Variant not in the 5'UTR of the given transcript",
+    ):
+        self._error = error
+        super().__init__(self._error)
+
+class ReferenceMismatchError(VariantException):
+    def __init__(
+        self, 
+        error = "Reference alleles do not match",
+    ):
+        self._error = error
+        super().__init__(self._error)
+
+class MismatchedContigsError(VariantException):
+    def __init__(
+        self, 
+        error = "Variant and 5'UTR regions not in the same contig.",
+    ):
+        self._error = error
+        super().__init__(self._error)
 
 
 class VCFfile:
