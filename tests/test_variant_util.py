@@ -164,7 +164,6 @@ class TestPrepareAltSeq:
 
         def test_check_variant_in_cdna(
             self,
-            cdna_seq_positive: str,
             five_utr_coordinates_positive: FiveUTRCoordinates,
         ):
             vc = TestPrepareAltSeq.make_variant(100, "C", "T")
