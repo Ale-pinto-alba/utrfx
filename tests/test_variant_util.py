@@ -320,10 +320,10 @@ class TestVCFFile:
     ):
         with VCFfile(vcf_fpath) as vcf_fh:
 
-            af = vcf_fh.get_allele_frequency(contig=contig, start=22_130_650, end=22_130_651)     
-            assert af == pytest.approx(6.5e-06, abs=1e-7)
+            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=22_130_611, ref="C", alt="T"))     
+            assert af == pytest.approx(1.31e-05, abs=1e-7)
 
-            af = vcf_fh.get_allele_frequency(contig=contig, start=22_130_655, end=22_130_657)
+            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=22_130_655, ref="C", alt="T"))
             assert af == None
 
     def test_raises_if_not_used_as_a_context_manager(
