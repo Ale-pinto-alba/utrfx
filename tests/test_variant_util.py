@@ -1,8 +1,7 @@
 import os
 import pytest
-import pysam
 
-from utrfx.variant_util import prepare_alt_seq, VariantNotIn5UTRError, VCFfile
+from utrfx.variant_util import prepare_alt_seq,check_variant_in_cdna, VCFfile
 from utrfx.model import FiveUTRCoordinates
 from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
 
@@ -163,16 +162,13 @@ class TestPrepareAltSeq:
             actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
             assert actual == expected
 
-        def test_variant_out_of_five_utr(
+        def test_check_variant_in_cdna(
             self,
             cdna_seq_positive: str,
             five_utr_coordinates_positive: FiveUTRCoordinates,
         ):
             vc = TestPrepareAltSeq.make_variant(100, "C", "T")
-            with pytest.raises(VariantNotIn5UTRError) as e:
-                prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-
-            assert str(e.value) == "Variant not in the 5'UTR of the given transcript"
+            assert check_variant_in_cdna(vc, five_utr_coordinates_positive) == "Variant not in the 5'UTR of the given transcript"
 
     class TestNegativeStrand:
 
