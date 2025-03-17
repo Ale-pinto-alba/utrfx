@@ -129,3 +129,26 @@ class VCFfile:
             for alt in rec.alts:
                 variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
         return variant_list
+
+def uorf_mutation_classifier(
+    canonical_uorfs_lengths: typing.Collection[int],
+    variant_uorfs_lengths: typing.Collection[int]
+) -> str:
+    """
+    Compare the uORFs lengths of a variant with the ones of its canonical transcript and return the type of mutation
+    that affects the uORF.
+
+    We recommend using a list with the length of each uORF.
+    """
+    for length1, length2 in zip(canonical_uorfs_lengths, variant_uorfs_lengths):
+        if length1 > length2:
+            return "Stop codon gain mutation"
+        elif length1 < length2:
+            return "Stop codon loss mutation"
+    
+    if len(canonical_uorfs_lengths) > len(variant_uorfs_lengths):
+        return "Start codon loss mutation"
+    elif len(canonical_uorfs_lengths) < len(variant_uorfs_lengths):
+        return "Start codon gain mutation"
+
+    return "Missense mutation"

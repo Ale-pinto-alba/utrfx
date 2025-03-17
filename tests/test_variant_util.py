@@ -1,10 +1,10 @@
 import os
 import pytest
-import pysam
+import typing
 
-from utrfx.variant_util import prepare_alt_seq, VCFfile
+from utrfx.variant_util import prepare_alt_seq, VCFfile, uorf_mutation_classifier
 from utrfx.model import FiveUTRCoordinates
-from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild, Region
+from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
 
 class TestPrepareAltSeq:
     """
@@ -324,4 +324,24 @@ class TestVCFFile:
             _ = vcf.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
             
         assert e.value.args == ("VCFfile must be used as a context manager",)
+
+
+@pytest.mark.parametrize(
+    "canonical_uorfs, variant_uorfs, expected",
+    [
+        ([10,10,10], [10,10,10,10], "Start codon gain mutation"),
+        ([10,10,10],[10,10], "Start codon loss mutation"),
+        ([10,10,10],[10,10,9], "Stop codon gain mutation"),
+        ([10,10,10],[10,10,11], "Stop codon loss mutation"),
+        ([10,10,10],[10,10,10], "Missense mutation"),
+    ]
+)
+def test_variant_classifier(
+    canonical_uorfs: typing.Collection[int],
+    variant_uorfs: typing.Collection[int],
+    expected: str,
+):
+    type_mutation = uorf_mutation_classifier(canonical_uorfs, variant_uorfs)
+
+    assert type_mutation == expected
         
