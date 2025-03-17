@@ -7,6 +7,11 @@ from utrfx.genome import VariantCoordinates, Strand, Contig
 from utrfx.model import FiveUTRCoordinates
 
 class PrepareAltSeq:
+    """
+    `PrepareAltSeq` allows the obtention of the cDNA sequence of a variant.
+
+    It permits to check if the variant is located in the given transcript's 5'UTR.
+    """
     def __init__(
         self,
         variant: VariantCoordinates,
@@ -23,11 +28,7 @@ class PrepareAltSeq:
 
     def variant_position(self) -> int:
         """
-        Get the 5'UTR region with an alternative allele from the reference cDNA.
-
-        :param variant: Variant as VariantCoordinates instance.
-        :param cdna: 5'UTR region as cDNA (with reference allele).
-        :param five_utrs: Genomic Regions of the 5'UTR. 
+        Obtain the variant position index as a integer.
         """
         five_utrs_tuple = []
         for region in self._five_utrs.regions:
@@ -63,6 +64,11 @@ class PrepareAltSeq:
         self,
         variant_cdna_pos: int,
     ) -> str:
+        """
+        Get the 5'UTR region with an alternative allele from the reference cDNA.
+
+        :param variant_cdna_pos: Index of the variant position within the cDNA.
+        """
         return self._cdna[:variant_cdna_pos] + self._alt + self._cdna[variant_cdna_pos + len(self._ref):]
     
     def _obtain_gene_strand(self) -> Strand:
@@ -91,6 +97,9 @@ class PrepareAltSeq:
         self, 
         variant_cdna_pos: int,
     ) -> str:
+        """
+        Check if the variant is in the 5'UTR and if the reference alleles match.
+        """
         for region in self._five_utrs.regions:
             five_utr_contig = region.contig
             gene_strand = region.strand
@@ -120,7 +129,6 @@ class VCFfile:
 
     The object must be used as a context manager to ensure proper resource cleanup.
     """
-
     def __init__(
         self,
         vcf_fpath: str,
