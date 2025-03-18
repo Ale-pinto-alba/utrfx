@@ -2,7 +2,7 @@ import os
 import pytest
 import typing
 
-from utrfx.variant_util import prepare_alt_seq, VCFfile, uorf_mutation_classifier
+from utrfx.variant_util import prepare_alt_seq, VCFfile, uorf_mutation_classifier_start_codon
 from utrfx.model import FiveUTRCoordinates
 from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
 
@@ -331,9 +331,6 @@ class TestVCFFile:
     [
         ([10,10,10], [10,10,10,10], "Start codon gain mutation"),
         ([10,10,10],[10,10], "Start codon loss mutation"),
-        ([10,10,10],[10,10,9], "Stop codon gain mutation"),
-        ([10,10,10],[10,10,11], "Stop codon loss mutation"),
-        ([10,10,10],[10,10,10], "Missense mutation"),
     ]
 )
 def test_variant_classifier(
@@ -341,7 +338,7 @@ def test_variant_classifier(
     variant_uorfs: typing.Collection[int],
     expected: str,
 ):
-    type_mutation = uorf_mutation_classifier(canonical_uorfs, variant_uorfs)
+    type_mutation = uorf_mutation_classifier_start_codon(canonical_uorfs, variant_uorfs)
 
     assert type_mutation == expected
         
