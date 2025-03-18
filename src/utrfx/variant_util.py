@@ -145,12 +145,12 @@ class VariantClassifier:
         variant_cdna_pos: int,
     ):
         """
-        canonical_uorfs_lengths_list
-        variant_uorfs_lengths_list
-        canonical_uorfs_ouorf_list
-        svariant_uorfs_ouorf_list
-        uorf_end_pos
-        variant_cdna_pos
+        :param canonical_uorfs_lengths_list: list containing the uORFs lengths of the canonical sequence.
+        :param variant_uorfs_lengths_list: list containing the uORFs lengths of the variant sequence.
+        :param canonical_uorfs_ouorf_list: list containing if the uORFs of the canonical sequence are overlapping.
+        :param variant_uorfs_ouorf_list: list containing if the uORFs of the variant sequence are overlapping.
+        :param uorf_end_pos: integer corresponding to the end of the uORF.
+        :param variant_cdna_pos: integer corresponding to the variant position within the cDNA sequence.
         """
         self._canonical_uorfs_lengths_list = canonical_uorfs_lengths_list
         self._variant_uorfs_lengths_list = variant_uorfs_lengths_list
