@@ -332,7 +332,7 @@ class TestVCFFile:
         ([9, 9], [9], [False, False], [False], 0, 0, "Start codon loss mutation"),
         ([9, 9], [9, 12], [False, False], [False, True], 9, 8, "Stop codon loss mutation"),
         ([9, 9], [9, 6], [False, False], [False, False], 0, 0, "Stop codon gain mutation"),
-        ([9, 9], [9, 3], [False, False], [False, True], 9, 3, "Deletion"),
+        ([9, 9], [9, 3], [False, False], [False, True], 9, 6, "Deletion"),
         ([9, 9], [9, 12], [False, False], [False, True], 9, 3, "Insertion"),
          ([9, 9], [9, 9], [False, False], [False, False], 0, 0, "SNV or MNV"),           
     ]
