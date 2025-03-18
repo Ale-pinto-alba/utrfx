@@ -1,5 +1,6 @@
 import os
 import pytest
+import typing
 
 from utrfx.variant_util import prepare_alt_seq,check_variant_in_cdna, VCFfile
 from utrfx.model import FiveUTRCoordinates
@@ -290,7 +291,6 @@ class TestVCFFile:
         contig: Contig,
         vcf_fpath: str,
     ):
-        # contig = genome_build.contig_by_name("8")
         with VCFfile(vcf_fpath) as vcf_fh:
             variants = vcf_fh.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
 
@@ -308,18 +308,26 @@ class TestVCFFile:
         assert last.start == 22_130_691
         assert last.end == 22_130_692
 
+    @pytest.mark.parametrize(
+        "pos, ref, alt, expected",
+        (
+            (22_130_611, "C", "T", pytest.approx(1.31e-05, abs=1e-7)), # Existing variant
+            (22_130_611, "C", "A", None), # Previous variant but with an alt allele not in the VCF file, therefore, no AF available
+            (22_130_655, "C", "T", None), # Non-existing variant
+        )
+    )
     def test_get_allele_frequency(
         self,
         contig: Contig,
         vcf_fpath: str,
+        pos: int, 
+        ref: str,
+        alt: str,
+        expected: typing.Optional[float],
     ):
         with VCFfile(vcf_fpath) as vcf_fh:
-
-            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=22_130_611, ref="C", alt="T"))     
-            assert af == pytest.approx(1.31e-05, abs=1e-7)
-
-            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=22_130_655, ref="C", alt="T"))
-            assert af == None
+            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
+            assert af == expected
 
     def test_raises_if_not_used_as_a_context_manager(
         self,

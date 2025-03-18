@@ -154,16 +154,13 @@ class VCFfile:
 
         :param variant: single variant as `VariantCoordinates`class instance.
         """
-        assert self._vcf_file is not None, "VCFfile must be used as a context manager"
+        assert self._vcf_file is not None, "VCF file must be used as a context manager"
         contig = f"chr{variant.chrom}"
         for rec in self._vcf_file.fetch(contig, variant.start, variant.end):
             af_tuple = rec.info.get('AF', None)
-            if len(af_tuple) == 1:
-                return af_tuple[0] 
-            else:
-                af_index = - 1
-                for alt in rec.alts:
-                    af_index += 1
-                    if alt == variant.alt:
-                        af_tuple[af_index]
+            af_index = -1
+            for alt in rec.alts:
+                af_index += 1
+                if alt == variant.alt:
+                    return af_tuple[af_index]
         return None
