@@ -2,7 +2,7 @@ import os
 import pytest
 import typing
 
-from utrfx.variant_util import prepare_alt_seq, VCFfile, uorf_mutation_classifier_start_codon
+from utrfx.variant_util import prepare_alt_seq, VCFfile, VariantClassifier
 from utrfx.model import FiveUTRCoordinates
 from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
 
@@ -325,20 +325,36 @@ class TestVCFFile:
             
         assert e.value.args == ("VCFfile must be used as a context manager",)
 
-
 @pytest.mark.parametrize(
-    "canonical_uorfs, variant_uorfs, expected",
+    "canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos, variant_cdna_pos, expected",
     [
-        ([10,10,10], [10,10,10,10], "Start codon gain mutation"),
-        ([10,10,10],[10,10], "Start codon loss mutation"),
+        ([9, 9], [9, 9, 9], [False, False], [False, False, False], 0, 0, "Start codon gain mutation"),
+        ([9, 9], [9], [False, False], [False], 0, 0, "Start codon loss mutation"),
+        ([9, 9], [9, 12], [False, False], [False, True], 9, 8, "Stop codon loss mutation"),
+        ([9, 9], [9, 6], [False, False], [False, False], 0, 0, "Stop codon gain mutation"),
+        ([9, 9], [9, 3], [False, False], [False, True], 9, 3, "Deletion"),
+        ([9, 9], [9, 12], [False, False], [False, True], 9, 3, "Insertion"),
+         ([9, 9], [9, 9], [False, False], [False, False], 0, 0, "SNV or MNV"),           
     ]
 )
 def test_variant_classifier(
-    canonical_uorfs: typing.Collection[int],
-    variant_uorfs: typing.Collection[int],
+    canonical_lengths: typing.Collection[int],
+    variant_lengths: typing.Collection[int],
+    canonical_ouorf: typing.Collection[bool],
+    variant_ouorf: typing.Collection[bool],
+    uorf_end_pos: int,
+    variant_cdna_pos: int,
     expected: str,
 ):
-    type_mutation = uorf_mutation_classifier_start_codon(canonical_uorfs, variant_uorfs)
+    mut_class = VariantClassifier(
+        canonical_lengths,
+        variant_lengths,
+        canonical_ouorf,
+        variant_ouorf,
+        uorf_end_pos,
+        variant_cdna_pos,
+    )
 
-    assert type_mutation == expected
+    type_mut = mut_class.perform_mutation_analysis()
+    assert type_mut == expected
         
