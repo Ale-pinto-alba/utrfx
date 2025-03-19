@@ -69,8 +69,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_del(
@@ -84,8 +83,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGTTTTTAAAAACCCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_ins(
@@ -99,8 +97,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCTTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_mnv(
@@ -114,8 +111,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCAGGGTTTTTAAAAACCCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_snp_falls_on_second_five_utr_region(
@@ -129,8 +125,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAATCCCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_del_falls_on_second_five_utr_region(
@@ -144,8 +139,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAAACCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_ins_falls_on_second_five_utr_region(
@@ -159,8 +153,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAAATTCCCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_mnv_falls_on_second_five_utr_region(
@@ -174,8 +167,7 @@ class TestPrepareAltSeq:
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAAATCCCGGGGGTTTTT"
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_check_variant_in_cdna(
@@ -185,8 +177,7 @@ class TestPrepareAltSeq:
         ):
             vc = TestPrepareAltSeq.make_variant(100, "C", "T")
             vc_instance = PrepareAltSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-            vc_pos = vc_instance.variant_position()
-            assert vc_instance.check_variant_in_cdna(vc_pos) == "Variant not in the 5'UTR of the given transcript"
+            assert vc_instance.check_variant_in_cdna() == "Variant not in the 5'UTR of the given transcript"
 
     class TestNegativeStrand:
 
@@ -239,8 +230,7 @@ class TestPrepareAltSeq:
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGTCCCCCTTTTTAAAAACCCCC"
             vc_instance = PrepareAltSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_del(
@@ -254,8 +244,7 @@ class TestPrepareAltSeq:
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGCCCCCTTTTTAAAAACCCCC"
             vc_instance = PrepareAltSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_ins(
@@ -269,8 +258,7 @@ class TestPrepareAltSeq:
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGGTCCCCCTTTTTAAAAACCCCC"
             vc_instance = PrepareAltSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_mnv(
@@ -284,8 +272,7 @@ class TestPrepareAltSeq:
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGGCCCCCTTTTTAAAACTGCCCC"
             vc_instance = PrepareAltSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
-            vc_pos = vc_instance.variant_position()
-            actual = vc_instance.prepare_alt_seq(vc_pos)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
     @staticmethod

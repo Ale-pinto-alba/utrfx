@@ -25,10 +25,11 @@ class PrepareAltSeq:
         self._ref = self._obtain_corresponding_ref_allele()
         self._alt = self._obtain_corresponding_alt_allele()
         self._variant_region_start = self._obtain_corresponding_variant_start()
+        self._variant_cdna_pos = self.variant_position()
 
     def variant_position(self) -> int:
         """
-        Obtain the variant position index as a integer.
+        Obtain the variant position index whithin the cDNA transcript sequence as a integer.
         """
         five_utrs_tuple = []
         for region in self._five_utrs.regions:
@@ -60,16 +61,11 @@ class PrepareAltSeq:
                 relative_variant_position = len(self._cdna) - variant_cdna_pos
                 return relative_variant_position
                 
-    def prepare_alt_seq(
-        self,
-        variant_cdna_pos: int,
-    ) -> str:
+    def prepare_alt_seq(self) -> str:
         """
         Get the 5'UTR region with an alternative allele from the reference cDNA.
-
-        :param variant_cdna_pos: Index of the variant position within the cDNA.
         """
-        return self._cdna[:variant_cdna_pos] + self._alt + self._cdna[variant_cdna_pos + len(self._ref):]
+        return self._cdna[:self._variant_cdna_pos] + self._alt + self._cdna[self._variant_cdna_pos + len(self._ref):]
     
     def _obtain_gene_strand(self) -> Strand:
         for region in self._five_utrs.regions:
@@ -93,10 +89,7 @@ class PrepareAltSeq:
         else:
             return self._variant.region.start_on_strand(self._gene_strand)
         
-    def check_variant_in_cdna(
-        self, 
-        variant_cdna_pos: int,
-    ) -> str:
+    def check_variant_in_cdna(self) -> str:
         """
         Check if the variant is in the 5'UTR and if the reference alleles match.
         """
@@ -116,7 +109,7 @@ class PrepareAltSeq:
             if in_variant is not True:
                 return "Variant not in the 5'UTR of the given transcript"
             else:
-                if self._cdna[variant_cdna_pos:variant_cdna_pos + len(ref)] != ref:
+                if self._cdna[self._variant_cdna_pos:self._variant_cdna_pos + len(ref)] != ref:
                     return "Reference alleles do not match"
                 
 def reverse_complement(seq: str,) -> str:
