@@ -6,9 +6,9 @@ import pysam
 from utrfx.genome import VariantCoordinates, Strand, Contig
 from utrfx.model import FiveUTRCoordinates
 
-class PrepareAltSeq:
+class AltAlleleSeq:
     """
-    `PrepareAltSeq` allows the obtention of the cDNA sequence of a variant.
+    `AltAlleleSeq` allows the obtention of the cDNA sequence of a variant.
 
     It permits to check if the variant is located in the given transcript's 5'UTR.
     """
