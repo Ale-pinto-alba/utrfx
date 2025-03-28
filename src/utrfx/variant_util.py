@@ -158,9 +158,9 @@ class VCFfile:
         contig = f"chr{variant.chrom}"
         for rec in self._vcf_file.fetch(contig, variant.start, variant.end):
             af_tuple = rec.info.get('AF', None)
-            af_index = -1
-            for alt in rec.alts:
-                af_index += 1
+            if af_tuple is None:
+                continue
+            for af_index, alt in enumerate(rec.alts):
                 if alt == variant.alt:
                     return af_tuple[af_index]
         return None
