@@ -159,7 +159,7 @@ class VariantClassifier:
         self._uorf_end_pos = uorf_end_pos
         self._variant_cdna_pos = variant_cdna_pos
 
-    def _mutation_classifier_start_codon(self) -> str:
+    def _mutation_classifier_start_codon(self) -> typing.Optional[str]:
         """
         Compare the number of uORFs of a variant with the one of its canonical transcript.
         """
@@ -168,7 +168,7 @@ class VariantClassifier:
         elif len(self._canonical_uorfs_lengths_list) < len(self._variant_uorfs_lengths_list):
             return "Start codon gain mutation"
         
-    def _mutation_classifier_stop_codon_loss(self) -> str:
+    def _mutation_classifier_stop_codon_loss(self) -> typing.Optional[str]:
         """
         Compare each uORF of the canonical with its corresponding one in the variant sequence, if the uORF is overlapping in the variant and not in the canonical 
         and the distance between the variant position and the uORF end is less or equal to two, it would mean that the variant causes 
@@ -178,7 +178,7 @@ class VariantClassifier:
             if ouorf2 is True and ouorf1 is False and 0 <= (self._uorf_end_pos - self._variant_cdna_pos) <= 2:
                 return "Stop codon loss mutation"
 
-    def _mutation_classifier_stop_codon_gain(self) -> str:
+    def _mutation_classifier_stop_codon_gain(self) -> typing.Optional[str]:
         """
         Check if a uORF is not overlapping and if this uORF length is shorter than the one in the canonical sequence,
         meaning that a stop codon appeared because of the variant.
