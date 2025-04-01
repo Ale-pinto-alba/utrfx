@@ -174,7 +174,9 @@ class VCFfile:
             pos = rec.pos
             ref = rec.ref
             for alt in rec.alts:
-                variant_list.append(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
+                variant = VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt)
+                variant.change_length = len(ref) - len(alt)
+                variant_list.append(variant)
         return variant_list
     
     def get_allele_frequency(

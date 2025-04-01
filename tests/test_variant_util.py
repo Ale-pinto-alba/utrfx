@@ -297,6 +297,10 @@ class TestVCFFile:
         return os.path.join(fpath_data_dir, "gnomad.genomes.v4.1.sites.chr8.sample.vcf.gz")
 
     @pytest.fixture(scope="class")
+    def fake_vcf_sample(self, fpath_data_dir: str) -> str:                      # Fake VCF file with a manipulated variant, used to prove the returning of
+        return os.path.join(fpath_data_dir, "fake-sample-multiple-alts.vcf.gz") # multiple AF if existing
+
+    @pytest.fixture(scope="class")
     def contig(self, genome_build: GenomeBuild) -> Contig:
         return genome_build.contig_by_name("8")
 
@@ -340,6 +344,26 @@ class TestVCFFile:
         expected: typing.Optional[float],
     ):
         with VCFfile(vcf_fpath) as vcf_fh:
+            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
+            assert af == expected
+
+    @pytest.mark.parametrize(
+            "pos, ref, alt, expected",
+        (
+            (22_130_611, "C", "T", pytest.approx(0.009999999776482582, rel=1e-9)), # Existing variant with fake AF
+            (22_130_611, "C", "G", pytest.approx(0.019999999552965164, rel=1e-9)), # Non-existing ALT allele with a fake AF
+        )
+    )
+    def test_get_allele_frequency_fake_sample(
+        self,
+        contig: Contig,
+        fake_vcf_sample: str,
+        pos: int, 
+        ref: str,
+        alt: str,
+        expected: typing.Optional[float],
+    ):
+        with VCFfile(fake_vcf_sample) as vcf_fh:
             af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
             assert af == expected
 
