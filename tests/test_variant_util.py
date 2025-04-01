@@ -1,10 +1,10 @@
 import os
 import pytest
-import pysam
+import typing
 
-from utrfx.variant_util import prepare_alt_seq, VCFfile
+from utrfx.variant_util import AltAlleleSeq, VCFfile
 from utrfx.model import FiveUTRCoordinates
-from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild, Region
+from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
 
 class TestPrepareAltSeq:
     """
@@ -69,7 +69,8 @@ class TestPrepareAltSeq:
             #                    *
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_del(
@@ -82,7 +83,8 @@ class TestPrepareAltSeq:
             #                    ***
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_ins(
@@ -95,7 +97,8 @@ class TestPrepareAltSeq:
             #                    *
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCTTGGGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_mnv(
@@ -108,7 +111,8 @@ class TestPrepareAltSeq:
             #                    ***
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCAGGGTTTTTAAAAACCCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_snp_falls_on_second_five_utr_region(
@@ -121,7 +125,8 @@ class TestPrepareAltSeq:
             #                                   *
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAATCCCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_del_falls_on_second_five_utr_region(
@@ -134,7 +139,8 @@ class TestPrepareAltSeq:
             #                                   *
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAAACCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_ins_falls_on_second_five_utr_region(
@@ -147,7 +153,8 @@ class TestPrepareAltSeq:
             #                                   *
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAAATTCCCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_mnv_falls_on_second_five_utr_region(
@@ -160,19 +167,18 @@ class TestPrepareAltSeq:
             #                                   *
             #     ref:  AAAAACCCCCGGGGGTTTTTAAAAACCCCCGGGGGTTTTT
             expected = "AAAAACCCCCGGGGGTTTTTAAAAATCCCGGGGGTTTTT"
-            actual = prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
-        def test_variant_out_of_five_utr(
+        def test_check_variant_in_cdna(
             self,
             cdna_seq_positive: str,
             five_utr_coordinates_positive: FiveUTRCoordinates,
         ):
             vc = TestPrepareAltSeq.make_variant(100, "C", "T")
-            with pytest.raises(AssertionError) as e:
-                prepare_alt_seq(vc, cdna_seq_positive, five_utr_coordinates_positive)
-
-            assert e.value.args == ("Variant not in the 5'UTR of the given transcript.",)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_positive, five_utr_coordinates_positive)
+            assert vc_instance.check_variant_in_cdna() == "Variant not in the 5'UTR of the given transcript"
 
     class TestNegativeStrand:
 
@@ -224,7 +230,8 @@ class TestPrepareAltSeq:
             #               *
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGTCCCCCTTTTTAAAAACCCCC"
-            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_del(
@@ -237,7 +244,8 @@ class TestPrepareAltSeq:
             #              **
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGCCCCCTTTTTAAAAACCCCC"
-            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_ins(
@@ -250,7 +258,8 @@ class TestPrepareAltSeq:
             #               *
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGGTCCCCCTTTTTAAAAACCCCC"
-            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
         def test_mnv(
@@ -263,7 +272,8 @@ class TestPrepareAltSeq:
             #                              **
             #     ref:  GGGGGCCCCCTTTTTAAAAACCCCC
             expected = "GGGGGCCCCCTTTTTAAAACTGCCCC"
-            actual = prepare_alt_seq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            vc_instance = AltAlleleSeq(vc, cdna_seq_negative, five_utr_coordinates_negative)
+            actual = vc_instance.prepare_alt_seq()
             assert actual == expected
 
     @staticmethod
@@ -286,13 +296,19 @@ class TestVCFFile:
     def vcf_fpath(self, fpath_data_dir: str) -> str:
         return os.path.join(fpath_data_dir, "gnomad.genomes.v4.1.sites.chr8.sample.vcf.gz")
 
+    @pytest.fixture(scope="class")
+    def fake_vcf_sample(self, fpath_data_dir: str) -> str:                      # Fake VCF file with a manipulated variant, used to prove the returning of
+        return os.path.join(fpath_data_dir, "fake-sample-multiple-alts.vcf.gz") # multiple AF if existing
+
+    @pytest.fixture(scope="class")
+    def contig(self, genome_build: GenomeBuild) -> Contig:
+        return genome_build.contig_by_name("8")
 
     def test_retrieve_variants_of_region(
         self,
-        genome_build: GenomeBuild,
+        contig: Contig,
         vcf_fpath: str,
     ):
-        contig = genome_build.contig_by_name("8")
         with VCFfile(vcf_fpath) as vcf_fh:
             variants = vcf_fh.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
 
@@ -309,6 +325,47 @@ class TestVCFFile:
         last = variants[-1]
         assert last.start == 22_130_691
         assert last.end == 22_130_692
+
+    @pytest.mark.parametrize(
+        "pos, ref, alt, expected",
+        (
+            (22_130_611, "C", "T", pytest.approx(1.31e-05, abs=1e-7)), # Existing variant
+            (22_130_611, "C", "A", None), # Previous variant but with an alt allele not in the VCF file, therefore, no AF available
+            (22_130_655, "C", "T", None), # Non-existing variant
+        )
+    )
+    def test_get_allele_frequency(
+        self,
+        contig: Contig,
+        vcf_fpath: str,
+        pos: int, 
+        ref: str,
+        alt: str,
+        expected: typing.Optional[float],
+    ):
+        with VCFfile(vcf_fpath) as vcf_fh:
+            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
+            assert af == expected
+
+    @pytest.mark.parametrize(
+            "pos, ref, alt, expected",
+        (
+            (22_130_611, "C", "T", pytest.approx(0.009999999776482582, rel=1e-9)), # Existing variant with fake AF
+            (22_130_611, "C", "G", pytest.approx(0.019999999552965164, rel=1e-9)), # Non-existing ALT allele with a fake AF
+        )
+    )
+    def test_get_allele_frequency_fake_sample(
+        self,
+        contig: Contig,
+        fake_vcf_sample: str,
+        pos: int, 
+        ref: str,
+        alt: str,
+        expected: typing.Optional[float],
+    ):
+        with VCFfile(fake_vcf_sample) as vcf_fh:
+            af = vcf_fh.get_allele_frequency(VariantCoordinates.from_vcf_literal(contig=contig, pos=pos, ref=ref, alt=alt))
+            assert af == expected
 
     def test_raises_if_not_used_as_a_context_manager(
         self,
