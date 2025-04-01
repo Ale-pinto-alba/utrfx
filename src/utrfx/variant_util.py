@@ -1,4 +1,5 @@
 import typing
+from typing import List
 import os
 
 import pysam
@@ -178,7 +179,7 @@ class VCFfile:
                 variant.change_length = len(ref) - len(alt)
                 variant_list.append(variant)
         return variant_list
-    
+      
     def get_allele_frequency(
         self,
         variant: VariantCoordinates,
@@ -198,3 +199,89 @@ class VCFfile:
                 if alt == variant.alt:
                     return af_tuple[af_index]
         return None
+
+class VariantClassifier:
+    """
+    `MutationClassifier` allows the determination of the mutation type of a given variant.
+    """
+    def __init__(
+        self,
+        canonical_uorfs_lengths_list: typing.Collection[int],
+        variant_uorfs_lengths_list: typing.Collection[int],
+        canonical_uorfs_ouorf_list: typing.Collection[bool],
+        variant_uorfs_ouorf_list: typing.Collection[bool],
+        uorf_end_pos: int,
+        variant_cdna_pos: int,
+    ):
+        """
+        :param canonical_uorfs_lengths_list: list containing the uORFs lengths of the canonical sequence.
+        :param variant_uorfs_lengths_list: list containing the uORFs lengths of the variant sequence.
+        :param canonical_uorfs_ouorf_list: list containing if the uORFs of the canonical sequence are overlapping.
+        :param variant_uorfs_ouorf_list: list containing if the uORFs of the variant sequence are overlapping.
+        :param uorf_end_pos: integer corresponding to the end of the uORF.
+        :param variant_cdna_pos: integer corresponding to the variant position within the cDNA sequence.
+        """
+        self._canonical_uorfs_lengths_list = canonical_uorfs_lengths_list
+        self._variant_uorfs_lengths_list = variant_uorfs_lengths_list
+        self._canonical_uorfs_ouorf_list = canonical_uorfs_ouorf_list
+        self._variant_uorfs_ouorf_list = variant_uorfs_ouorf_list
+        self._uorf_end_pos = uorf_end_pos
+        self._variant_cdna_pos = variant_cdna_pos
+
+    def _mutation_classifier_start_codon(self) -> typing.Optional[str]:
+        """
+        Compare the number of uORFs of a variant with the one of its canonical transcript.
+        """
+        if len(self._canonical_uorfs_lengths_list) > len(self._variant_uorfs_lengths_list):
+            return "Start codon loss mutation"
+        elif len(self._canonical_uorfs_lengths_list) < len(self._variant_uorfs_lengths_list):
+            return "Start codon gain mutation"
+        
+    def _mutation_classifier_stop_codon_loss(self) -> typing.Optional[str]:
+        """
+        Compare each uORF of the canonical with its corresponding one in the variant sequence, if the uORF is overlapping in the variant and not in the canonical 
+        and the distance between the variant position and the uORF end is less or equal to two, it would mean that the variant causes 
+        the stop codon uORF loss. 
+        """
+        for ouorf1, ouorf2 in zip(self._canonical_uorfs_ouorf_list, self._variant_uorfs_ouorf_list):
+            if ouorf2 is True and ouorf1 is False and 0 <= (self._uorf_end_pos - self._variant_cdna_pos) <= 2:
+                return "Stop codon loss mutation"
+
+    def _mutation_classifier_stop_codon_gain(self) -> typing.Optional[str]:
+        """
+        Check if a uORF is not overlapping and if this uORF length is shorter than the one in the canonical sequence,
+        meaning that a stop codon appeared because of the variant.
+        """
+        uorf_index = -1
+        for ouorf in self._variant_uorfs_ouorf_list:
+            uorf_index += 1
+            if ouorf is False and self._canonical_uorfs_lengths_list[uorf_index] > self._variant_uorfs_lengths_list[uorf_index]:
+                return "Stop codon gain mutation"
+
+    def _mutation_classifier_indel_snv(self) -> str:
+        """
+        Check if there is any change between the lengths of uORFs and if not.
+        """
+        for length1, length2 in zip(self._canonical_uorfs_lengths_list, self._variant_uorfs_lengths_list):
+            if length1 > length2:
+                return "Deletion"
+            elif length1 < length2:
+                return "Insertion"
+        return "SNV or MNV"
+
+    def perform_mutation_analysis(self) -> str:
+        """
+        Check in order which kind of variant is it.
+        """
+        start_codon_mutation = self._mutation_classifier_start_codon()
+        if start_codon_mutation:
+            return start_codon_mutation
+        stop_codon_loss_mutation = self._mutation_classifier_stop_codon_loss()
+        if stop_codon_loss_mutation:
+            return stop_codon_loss_mutation
+        stop_codon_gain_mutation = self._mutation_classifier_stop_codon_gain()
+        if stop_codon_gain_mutation:
+            return stop_codon_gain_mutation
+        indel_snv_mutation = self._mutation_classifier_indel_snv()
+        if indel_snv_mutation:
+            return indel_snv_mutation

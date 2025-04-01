@@ -2,7 +2,8 @@ import os
 import pytest
 import typing
 
-from utrfx.variant_util import AltAlleleSeq, VCFfile
+
+from utrfx.variant_util import AltAlleleSeq, VCFfile, VariantClassifier
 from utrfx.model import FiveUTRCoordinates
 from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
 
@@ -381,4 +382,37 @@ class TestVCFFile:
             _ = vcf.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
             
         assert e.value.args == ("VCFfile must be used as a context manager",)
+
+@pytest.mark.parametrize(
+    "canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos, variant_cdna_pos, expected",
+    [
+        ([9, 9], [9, 9, 9], [False, False], [False, False, False], 0, 0, "Start codon gain mutation"),
+        ([9, 9], [9], [False, False], [False], 0, 0, "Start codon loss mutation"),
+        ([9, 9], [9, 12], [False, False], [False, True], 9, 8, "Stop codon loss mutation"),
+        ([9, 9], [9, 6], [False, False], [False, False], 0, 0, "Stop codon gain mutation"),
+        ([9, 9], [9, 3], [False, False], [False, True], 9, 6, "Deletion"),
+        ([9, 9], [9, 12], [False, False], [False, True], 9, 3, "Insertion"),
+         ([9, 9], [9, 9], [False, False], [False, False], 0, 0, "SNV or MNV"),           
+    ]
+)
+def test_variant_classifier(
+    canonical_lengths: typing.Collection[int],
+    variant_lengths: typing.Collection[int],
+    canonical_ouorf: typing.Collection[bool],
+    variant_ouorf: typing.Collection[bool],
+    uorf_end_pos: int,
+    variant_cdna_pos: int,
+    expected: str,
+):
+    mut_class = VariantClassifier(
+        canonical_lengths,
+        variant_lengths,
+        canonical_ouorf,
+        variant_ouorf,
+        uorf_end_pos,
+        variant_cdna_pos,
+    )
+
+    type_mut = mut_class.perform_mutation_analysis()
+    assert type_mut == expected
         
