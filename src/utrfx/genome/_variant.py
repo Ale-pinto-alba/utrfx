@@ -254,6 +254,13 @@ class VariantCoordinates:
         Get the change of length between the `ref` and `alt` alleles due to the variant presence.
         """
         return self._change_length
+    
+    @change_length.setter
+    def change_length(self, value):
+        """ 
+        Set the change of length between the ref and alt alleles. 
+        """
+        self._change_length = value
 
     @property
     def variant_class(self) -> VariantClass:
