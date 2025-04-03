@@ -380,7 +380,7 @@ class TestVCFFile:
 
         with pytest.raises(AssertionError) as e:
             _ = vcf.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
-            
+             
         assert e.value.args == ("VCFfile must be used as a context manager",)
 
 @pytest.mark.parametrize(
