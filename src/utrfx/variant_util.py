@@ -1,5 +1,4 @@
 import typing
-from typing import List
 import os
 
 import pysam
@@ -210,7 +209,7 @@ class VariantClassifier:
         variant_uorfs_lengths_list: typing.Collection[int],
         canonical_uorfs_ouorf_list: typing.Collection[bool],
         variant_uorfs_ouorf_list: typing.Collection[bool],
-        uorf_end_pos: int,
+        uorf_end_pos_list: typing.Collection[int],
         variant_cdna_pos: int,
     ):
         """
@@ -225,7 +224,7 @@ class VariantClassifier:
         self._variant_uorfs_lengths_list = variant_uorfs_lengths_list
         self._canonical_uorfs_ouorf_list = canonical_uorfs_ouorf_list
         self._variant_uorfs_ouorf_list = variant_uorfs_ouorf_list
-        self._uorf_end_pos = uorf_end_pos
+        self._uorf_end_pos_list = uorf_end_pos_list
         self._variant_cdna_pos = variant_cdna_pos
 
     def _mutation_classifier_start_codon(self) -> typing.Optional[str]:
@@ -243,18 +242,18 @@ class VariantClassifier:
         and the distance between the variant position and the uORF end is less or equal to two, it would mean that the variant causes 
         the stop codon uORF loss. 
         """
-        for ouorf1, ouorf2 in zip(self._canonical_uorfs_ouorf_list, self._variant_uorfs_ouorf_list):
-            if ouorf2 is True and ouorf1 is False and 0 <= (self._uorf_end_pos - self._variant_cdna_pos) <= 2:
-                return "Stop codon loss mutation"
+        for idx, (ouorf1, ouorf2) in enumerate(zip(self._canonical_uorfs_ouorf_list, self._variant_uorfs_ouorf_list)):
+            if ouorf2 is True and ouorf1 is False:
+                end_pos = self._uorf_end_pos_list[idx]
+                if 0 <= (end_pos - self._variant_cdna_pos) <= 2:
+                    return "Stop codon loss mutation"
 
     def _mutation_classifier_stop_codon_gain(self) -> typing.Optional[str]:
         """
         Check if a uORF is not overlapping and if this uORF length is shorter than the one in the canonical sequence,
         meaning that a stop codon appeared because of the variant.
         """
-        uorf_index = -1
-        for ouorf in self._variant_uorfs_ouorf_list:
-            uorf_index += 1
+        for uorf_index, ouorf in enumerate(self._variant_uorfs_ouorf_list):
             if ouorf is False and self._canonical_uorfs_lengths_list[uorf_index] > self._variant_uorfs_lengths_list[uorf_index]:
                 return "Stop codon gain mutation"
 
@@ -271,7 +270,7 @@ class VariantClassifier:
 
     def perform_mutation_analysis(self) -> str:
         """
-        Check in order which kind of variant is it.
+        Check which kind of variant is it.
         """
         start_codon_mutation = self._mutation_classifier_start_codon()
         if start_codon_mutation:
