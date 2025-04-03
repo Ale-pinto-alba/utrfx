@@ -382,7 +382,7 @@ class TestVCFFile:
             _ = vcf.retrieve_variants_of_region(contig=contig, start=22_130_651, end=22_130_692)
              
         assert e.value.args == ("VCFfile must be used as a context manager",)
-
+ 
 @pytest.mark.parametrize(
     "canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos_list, variant_cdna_pos, expected",
     [
