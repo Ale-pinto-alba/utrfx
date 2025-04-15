@@ -1,0 +1,2 @@
+tx_id	Pathogenicity proved	AF	Type mutation	NuORFs	0uORF_length	0Is_ouORF	0GC	0GCplus	0ID	0Cap_distance	0Kozak	1uORF_length	1Is_ouORF	1GC	1GCplus	1ID	1Cap_distance	1Kozak	2uORF_length	2Is_ouORF	2GC	2GCplus	2ID	2Cap_distance	2Kozak	3uORF_length	3Is_ouORF	3GC	3GCplus	3ID	3Cap_distance	3Kozak
+ENST00000381418-8		canonical	canonical	4	51	False	0.6274509803921569	0.9	556	16	2	105	False	0.7047619047619048	0.9	216	302	1	66	False	0.8181818181818182	0.7	47	510	1	17	True	0.5882352941176471	0	0	606	0
