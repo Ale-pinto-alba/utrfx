@@ -5,7 +5,7 @@ import typing
 
 from utrfx.variant_util import AltAlleleSeq, VCFfile, VariantClassifier
 from utrfx.model import FiveUTRCoordinates
-from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
+from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild, Region
 
 class TestPrepareAltSeq:
     """
@@ -384,18 +384,20 @@ class TestVCFFile:
         assert e.value.args == ("VCFfile must be used as a context manager",)
  
 @pytest.mark.parametrize(
-    "canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos_list, variant_cdna_pos, expected",
+    "canonical_uorfs_coordinates_list, canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos_list, variant_cdna_pos, expected",
     [
-        ([9, 9], [9, 9, 9], [False, False], [False, False, False], [0, 0], 0, "Start codon gain mutation"),
-        ([9, 9], [9], [False, False], [False], [0, 0], 0, "Start codon loss mutation"),
-        ([9, 9], [9, 12], [False, False], [False, True], [0, 9], 8, "Stop codon loss mutation"),
-        ([9, 9], [9, 6], [False, False], [False, False], [0, 0], 0, "Stop codon gain mutation"),
-        ([9, 9], [9, 3], [False, False], [False, True], [0, 9], 6, "Deletion"),
-        ([9, 9], [9, 12], [False, False], [False, True], [0, 9], 3, "Insertion"),
-         ([9, 9], [9, 9], [False, False], [False, False], [0, 9], 0, "SNV or MNV"),           
+        ([Region(10,11), Region(12,13)], [9, 9], [9], [False, False], [False], [0, 0], 0, "Variant does not affect any canonical uORF"),
+        ([Region(0,3), Region(12,13)], [9, 9], [9, 9, 9], [False, False], [False, False, False], [0, 0], 2, "Start codon gain mutation"),
+        ([Region(0,3), Region(12,13)], [9, 9], [9], [False, False], [False], [0, 0], 2, "Start codon loss mutation"),
+        ([Region(5,10), Region(12,13)], [9, 9], [9, 12], [False, False], [False, True], [0, 9], 8, "Stop codon loss mutation"),
+        ([Region(0,3), Region(12,13)], [9, 9], [9, 6], [False, False], [False, False], [0, 0], 2, "Stop codon gain mutation"),
+        ([Region(0,9), Region(12,13)], [9, 9], [9, 3], [False, False], [False, True], [0, 9], 6, "Deletion"),
+        ([Region(0,4), Region(12,13)], [9, 9], [9, 12], [False, False], [False, True], [0, 9], 3, "Insertion"),
+        ([Region(0,3), Region(12,13)], [9, 9], [9, 9], [False, False], [False, False], [0, 9], 2, "SNV or MNV"),           
     ]
 )
 def test_variant_classifier(
+    canonical_uorfs_coordinates_list: typing.Collection[Region],
     canonical_lengths: typing.Collection[int],
     variant_lengths: typing.Collection[int],
     canonical_ouorf: typing.Collection[bool],
@@ -405,6 +407,7 @@ def test_variant_classifier(
     expected: str,
 ):
     mut_class = VariantClassifier(
+        canonical_uorfs_coordinates_list,
         canonical_lengths,
         variant_lengths,
         canonical_ouorf,
@@ -415,4 +418,3 @@ def test_variant_classifier(
 
     type_mut = mut_class.perform_mutation_analysis()
     assert type_mut == expected
-        
