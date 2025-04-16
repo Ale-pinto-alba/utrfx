@@ -3,7 +3,7 @@ import os
 
 import pysam
 
-from utrfx.genome import VariantCoordinates, Strand, Contig
+from utrfx.genome import VariantCoordinates, Strand, Contig, Region
 from utrfx.model import FiveUTRCoordinates
 
 class AltAlleleSeq:
@@ -205,6 +205,7 @@ class VariantClassifier:
     """
     def __init__(
         self,
+        canonical_uorfs_coordinates_list: typing.Collection[Region],
         canonical_uorfs_lengths_list: typing.Collection[int],
         variant_uorfs_lengths_list: typing.Collection[int],
         canonical_uorfs_ouorf_list: typing.Collection[bool],
@@ -220,12 +221,21 @@ class VariantClassifier:
         :param uorf_end_pos: integer corresponding to the end of the uORF.
         :param variant_cdna_pos: integer corresponding to the variant position within the cDNA sequence.
         """
+        self._canonical_uorf_coordinates_list = canonical_uorfs_coordinates_list
         self._canonical_uorfs_lengths_list = canonical_uorfs_lengths_list
         self._variant_uorfs_lengths_list = variant_uorfs_lengths_list
         self._canonical_uorfs_ouorf_list = canonical_uorfs_ouorf_list
         self._variant_uorfs_ouorf_list = variant_uorfs_ouorf_list
         self._uorf_end_pos_list = uorf_end_pos_list
         self._variant_cdna_pos = variant_cdna_pos
+
+    def _check_if_mutation_in_uorf(self) -> typing.Optional[str]:
+        variant_in_uorf = False
+        for uorf_region in self._canonical_uorf_coordinates_list:
+            if uorf_region.start <= self._variant_cdna_pos <= uorf_region.end:
+                variant_in_uorf = True
+        if variant_in_uorf == False:
+            return "Variant does not affect any canonical uORF"
 
     def _mutation_classifier_start_codon(self) -> typing.Optional[str]:
         """
@@ -272,6 +282,9 @@ class VariantClassifier:
         """
         Check which kind of variant is it.
         """
+        variant_not_in_uorf = self._check_if_mutation_in_uorf()
+        if variant_not_in_uorf:
+            return variant_not_in_uorf
         start_codon_mutation = self._mutation_classifier_start_codon()
         if start_codon_mutation:
             return start_codon_mutation
