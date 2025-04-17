@@ -189,15 +189,32 @@ class VCFfile:
         :param variant: single variant as `VariantCoordinates`class instance.
         """
         assert self._vcf_file is not None, "VCF file must be used as a context manager"
+
+        af_field = self._get_af_field()
+        if af_field is None:
+            return None 
+
         contig = f"chr{variant.chrom}"
         for rec in self._vcf_file.fetch(contig, variant.start, variant.end):
-            af_tuple = rec.info.get('AF', None)
+            af_tuple = rec.info.get(af_field, None)
             if af_tuple is None:
                 continue
             for af_index, alt in enumerate(rec.alts):
                 if alt == variant.alt:
                     return af_tuple[af_index]
         return None
+    
+    def _get_af_field(self):
+        """
+        Determines which AF field is present in the VCF header: 'AF_joint' or 'AF'.
+        """
+        assert self._vcf_file is not None, "VCF file must be used as a context manager"
+        if 'AF_joint' in self._vcf_file.header.info:
+            return 'AF_joint'
+        elif 'AF' in self._vcf_file.header.info:
+            return 'AF'
+        else:
+            return None
 
 class VariantClassifier:
     """
