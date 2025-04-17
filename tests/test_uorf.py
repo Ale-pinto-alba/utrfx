@@ -1,4 +1,5 @@
 import pytest
+import typing
 
 from utrfx.genome import Region
 from utrfx.model import FiveUTRCoordinates, UORFCoordinates
@@ -127,7 +128,8 @@ def test_five_cap_to_uorf_distance(
             ((Region(start=16, end=67)), False, 2),
             ((Region(start=302, end=407)), False, 1),
             ((Region(start=510, end=576)), False, 1),
-            ((Region(start=606, end=623)), True, 0)
+            ((Region(start=606, end=623)), True, 0),
+            ((Region(start=1, end=4)), False, "Out of index"),
         ]
 )
 def test_kozak_sequence_strength(
@@ -135,7 +137,7 @@ def test_kozak_sequence_strength(
     hr_five_utr: FiveUTRCoordinates,
     region: Region,
     ouorf: bool,
-    expected: int,
+    expected: typing.Optional[int],
 ):
     uorf = UORFCoordinates(five_utr=hr_five_utr, uorf=region, ouorf=ouorf)
 
