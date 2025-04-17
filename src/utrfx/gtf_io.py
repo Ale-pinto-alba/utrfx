@@ -10,6 +10,8 @@ from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates
 class GTFio:
     """
     Parse a GTF file and return the available transcripts (as TranscriptCoordinates class).
+
+    It is tested in the GENCODE GTF file, others GTF files may change the manner of indicating UTRs.
     """
     def __init__(
         self,
@@ -50,49 +52,8 @@ class GTFio:
         assert list(gtf_df.columns) == ["seqname", "feature", "start", "end", "strand", "transcript_id"]
 
         return gtf_df
-    
-    def extract_five_utrs_if_explicit(
-        self,
-        genome_build: GenomeBuild,
-    ) -> typing.Collection[TranscriptCoordinates]:
-        """
-        Obtain transcripts if the 5'UTR regions are reported in the GTF file. 
-        """
-        possible_names = ["five_prime_utr", "5utr", "5UTR"]
-        utr_df = self._gtf_df[self._gtf_df["feature"].isin(possible_names)]
-        transcripts = []
 
-        for transcript_id, group in utr_df.groupby("transcript_id"):
-            contig = genome_build.contig_by_name(str(group["seqname"].iloc[0]))
-            if contig is None:
-                print("No contig found.")
-            else:
-                temp_utr_5prime_list = []
-
-                for _, row in group.iterrows():
-                    actual_feature_strand = self._parse_strand(row["strand"])
-                    utr_region = GenomicRegion(
-                        contig=contig,
-                        start=row["start"] - 1, 
-                        end=row["end"],
-                        strand=Strand.POSITIVE,
-                    ).with_strand(actual_feature_strand)
-
-                    temp_utr_5prime_list.append(utr_region)
-                
-                if temp_utr_5prime_list:
-                    transcripts.append(
-                        TranscriptCoordinates(
-                            tx_id=transcript_id,
-                            five_utr=FiveUTRCoordinates(
-                                regions=temp_utr_5prime_list,
-                            ),
-                        )
-                    )
-
-        return transcripts
-    
-    def extract_five_utrs_if_not_explicit(
+    def extract_five_utrs(
         self,
         genome_build: GenomeBuild,
     ) -> typing.Collection[TranscriptCoordinates]:
