@@ -218,7 +218,7 @@ class VCFfile:
 
 class VariantClassifier:
     """
-    `MutationClassifier` allows the determination of the mutation type of a given variant.
+    `MutationClassifier` allows the determination of the mutation type of a given variant and which uORF is affected.
     """
     def __init__(
         self,
@@ -314,3 +314,12 @@ class VariantClassifier:
         indel_snv_mutation = self._mutation_classifier_indel_snv()
         if indel_snv_mutation:
             return indel_snv_mutation
+        
+    def uorf_affected(self) -> typing.Optional[int]:
+        """
+        Determine which uORF is affected by the variant.
+        """
+        for uorf_index, uorf_region in enumerate(self._canonical_uorf_coordinates_list):
+            if uorf_region.start <= self._variant_cdna_pos <= uorf_region.end:
+                return uorf_index + 1
+        return None
