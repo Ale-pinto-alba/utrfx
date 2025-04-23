@@ -365,6 +365,8 @@ class VariantAA:
     def variant_codon(self) -> typing.Optional[str]:
         """
         Return the codon that contains the variant.
+
+        Work only for SNV.
         """
         for i in range(self._uorf_coordinates.start, self._uorf_coordinates.end, 3):
             codon = self._five_prime_seq[i:i + 3]
