@@ -491,3 +491,20 @@ class TestVariantAA:
         variant_class = VariantAA(five_prime_seq, Region(start, end), variant_cdna_pos)
 
         assert variant_class.variant_codon() == expected
+
+    @pytest.mark.parametrize(
+        "codon, expected",
+        [
+            ("TAG", "_"),
+            ("CGC", "R"),
+        ]
+    )
+    def test_variant_amino_acid(
+        self,
+        five_prime_seq: str,
+        codon: str,
+        expected: str,
+    ):
+        variant_class = VariantAA(five_prime_seq, Region(0, 3), 0)
+
+        assert variant_class.variant_amino_acid(codon) == expected

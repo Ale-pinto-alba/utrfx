@@ -335,11 +335,23 @@ class VariantAA:
         self._five_prime_seq = five_prime_seq
         self._uorf_coordinates = uorf_coordinates
         self._variant_cdna_pos = variant_cdna_pos
-        self._aa_dict = self._amino_acids_dictionary()
-
-    def _amino_acids_dictionary(self) -> dict:
+    
+    def variant_codon(self) -> typing.Optional[str]:
         """
-        Dictionary with each amino acid and its corresponding codon/s.
+        Return the codon that contains the variant.
+
+        Work only for SNV.
+        """
+        for i in range(self._uorf_coordinates.start, self._uorf_coordinates.end, 3):
+            codon = self._five_prime_seq[i:i + 3]
+            if i <= self._variant_cdna_pos < i + 3:
+                return codon
+        return None
+    
+    @staticmethod
+    def variant_amino_acid(codon) -> str:
+        """
+        Retrieve the amino acid coded by the codon.
         """
         aa_dict = { 
         'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M', 
@@ -359,17 +371,7 @@ class VariantAA:
         'TAC':'Y', 'TAT':'Y', 'TAA':'_', 'TAG':'_', 
         'TGC':'C', 'TGT':'C', 'TGA':'_', 'TGG':'W', 
         } 
-
-        return aa_dict
+        if codon in aa_dict.keys():
+            return aa_dict[codon]
     
-    def variant_codon(self) -> typing.Optional[str]:
-        """
-        Return the codon that contains the variant.
-
-        Work only for SNV.
-        """
-        for i in range(self._uorf_coordinates.start, self._uorf_coordinates.end, 3):
-            codon = self._five_prime_seq[i:i + 3]
-            if i <= self._variant_cdna_pos < i + 3:
-                return codon
-        return None
+    
