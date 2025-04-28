@@ -410,24 +410,33 @@ class VariantAA:
     
     @staticmethod
     def codon_usage(codon) -> float:
-        codon_rscu = {
-            "AAA": 0.8895, "AAG": 1.1105, "AAT": 0.9631, "AAC": 1.0369,
-            "ACA": 1.1521, "ACC": 1.3857, "ACG": 0.4455, "ACT": 1.0167,
-            "AGA": 1.3031, "AGC": 1.4287, "AGG": 1.2808, "AGT": 0.9113,
-            "ATA": 0.5319, "ATC": 1.3630, "ATT": 1.1051, "ATG": 1.0000,
+        """
+        Retrieve the codon usage frequency in 1000.
 
-            "CAA": 0.5404, "CAG": 1.4596, "CAT": 0.8516, "CAC": 1.1484,
-            "CCA": 1.1041, "CCC": 1.2857, "CCG": 0.4673, "CCT": 1.1428,
-            "CGA": 0.6411, "CGC": 1.0938, "CGG": 1.2060, "CGT": 0.4753,
-            "CTA": 0.4331, "CTC": 1.1506, "CTG": 2.3444, "CTT": 0.8104,
+        Krishnamurthy Subramanian, Bryan Payne, Felix Feyertag, David Alvarez-Ponce, 
+        The Codon Statistics Database: A Database of Codon Usage Bias, Molecular Biology and Evolution, Volume 39, Issue 8, August 2022, msac157, 
+        https://doi.org/10.1093/molbev/msac157
+        """
+        codon_frequency = {
+            "AAA": 25.1901, "AAG": 31.4481, "AAT": 17.0444, "AAC": 18.3501,
+            "ACA": 15.3184, "ACC": 18.4242, "ACG": 5.9236, "ACT": 13.5182,
+            "AGA": 12.3146, "AGC": 19.9075, "AGG": 12.1033, "AGT": 12.6984,
+            "ATA": 7.5636, "ATC": 19.3821, "ATT": 15.7146, "ATG": 21.0300,
 
-            "GAA": 0.8633, "GAG": 1.1367, "GAT": 0.9411, "GAC": 1.0589,
-            "GCA": 0.9206, "GCC": 1.5904, "GCG": 0.4384, "GCT": 1.0507,
-            "GGA": 1.0106, "GGC": 1.3462, "GGG": 0.9969, "GGT": 0.6463,
-            "GTA": 0.4841, "GTC": 0.9410, "GTG": 1.8322, "GTT": 0.7427,
+            "CAA": 12.8031, "CAG": 34.5800, "CAT": 11.1677, "CAC": 15.0600,
+            "CCA": 17.5929, "CCC": 20.4863, "CCG": 7.4462, "CCT": 18.2084,
+            "CGA": 6.0584, "CGC": 10.3363, "CGG": 11.3963, "CGT": 4.4912,
+            "CTA": 7.1547, "CTC": 19.0061, "CTG": 38.7259, "CTT": 13.3863,
 
-            "TAA": 0.8520, "TAG": 0.6706, "TAT": 0.9062, "TAC": 1.0938,
-            "TCA": 0.9278, "TCC": 1.2772, "TCG": 0.3278, "TCT": 1.1271, 
-            "TGA": 1.4774, "TGC": 1.0689, "TGG": 1.0000, "TGT": 0.9311, 
-            "TTA": 0.4780, "TTC": 1.0612, "TTG": 0.7835, "TTT": 0.9388,
+        
+            "GAA": 30.4087, "GAG": 40.0424, "GAT": 22.0502, "GAC": 24.8107,
+            "GCA": 16.1205, "GCC": 27.8499, "GCG": 7.6763, "GCT": 18.3994,
+            "GGA": 16.6903, "GGC": 22.2317, "GGG": 16.4639, "GGT": 10.6731,
+            "GTA": 7.1527, "GTC": 13.9037, "GTG": 27.0722, "GTT": 10.9735,
+
+            "TAA": 0.4856, "TAG": 0.3822, "TAT": 11.8554, "TAC": 14.3091,
+            "TCA": 12.9278, "TCC": 17.7956, "TCG": 4.5676, "TCT": 15.7052, 
+            "TGA": 0.8420, "TGC": 12.3082, "TGG": 12.2384, "TGT": 10.7211, 
+            "TTA": 7.8952, "TTC": 19.1588, "TTG": 12.9418, "TTT": 16.9475,
         }
+        return codon_frequency[codon]

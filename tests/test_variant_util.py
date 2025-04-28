@@ -514,7 +514,7 @@ class TestVariantAA:
         [
             ("R", "A", -1),
             ("A", "R", -1),
-            ("A", "A", 4)
+            ("A", "A", 4),
         ]
     )
     def test_amino_acid_difference_score(
@@ -522,8 +522,25 @@ class TestVariantAA:
         five_prime_seq: str,
         amino_one: str,
         amino_two: str, 
-        expected: str,
+        expected: int,
     ):
         variant_class = VariantAA(five_prime_seq, Region(0, 3), 0)
 
         assert variant_class.amino_acids_difference_score(amino_one, amino_two) == expected
+    
+    @pytest.mark.parametrize(
+        "codon, expected",
+        [
+            ("GCC", 27.8499),
+            ("ATT", 15.7146),
+        ]
+    )
+    def test_codon_usage(
+        self,
+        five_prime_seq: str,
+        codon: str,
+        expected: float,
+    ):
+        variant_class = VariantAA(five_prime_seq, Region(0, 3), 0)
+
+        assert variant_class.codon_usage(codon) == expected
