@@ -26,5 +26,5 @@ def test_gene_symbol(
     expected: str,
     tx_per_gene_class: TxperGene,
 ):
-    actual = tx_per_gene_class.ensembl_transcript(gene_symbol=gene_symbol)
+    actual = tx_per_gene_class.get_transcript_id(gene_symbol=gene_symbol)
     assert actual == expected
