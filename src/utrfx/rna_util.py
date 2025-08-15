@@ -1,3 +1,7 @@
+import tempfile
+import os
+import subprocess
+
 import RNA
 
 class RNA_folding:
@@ -59,3 +63,52 @@ class RNA_folding:
     def _pf(self):
         self._fc_wt.pf()
         self._fc_variant.pf()
+
+    def unpaired_bases_diff(self) -> float: 
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        
+        wt_unpaired = wt_structure.count('.')
+        variant_unpaired = variant_structure.count('.')
+
+        return abs(wt_unpaired - variant_unpaired)
+    
+
+    # def compare_probs(
+    #     self,
+    #     lbox1: list, 
+    #     ubox1: list, 
+    #     lbox2: list, 
+    #     ubox2: list,
+    # ):
+    #     sum_probs_first_seq = sum([x["score"] for x in lbox1 + ubox1])
+    #     suma_probs_second_seq = sum([x["score"] for x in lbox2 + ubox2])
+    #     probs_diff = sum_probs_first_seq - suma_probs_second_seq
+
+    #     return probs_diff
+    
+    # def generate_probs(
+    #     self,
+    #     sequence: str,
+    #     threshold: float = 1e-5
+    # ):
+    #     lbox = []
+    #     ubox = []
+
+    #     fc = RNA.fold_compound(sequence)
+    #     fc.pf()  # Calcula la función de partición
+
+    #     length = len(sequence)
+
+    #     for i in range(1, length + 1):
+    #         for j in range(i + 1, length + 1):
+    #             prob = fc.pr_ij(i, j)  # 👈 corrección aquí
+    #             if prob > threshold:
+    #                 entry = {"pos1": i, "pos2": j, "score": prob}
+    #                 if j - i == 1:
+    #                     lbox.append(entry)
+    #                 else:
+    #                     ubox.append(entry)
+
+    #     return lbox, ubox
+    
