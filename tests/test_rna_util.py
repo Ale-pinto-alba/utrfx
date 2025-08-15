@@ -78,6 +78,17 @@ class TestRNAfolding:
         
         assert actual == 10
 
+    def test_variant_change(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.variant_pos_change_type(15)
+        
+        assert actual == False
+
     # def test_total_probs_diff(
     #     self,
     #     wt_sequence: str, 

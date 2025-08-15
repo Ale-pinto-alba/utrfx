@@ -73,6 +73,18 @@ class RNA_folding:
 
         return abs(wt_unpaired - variant_unpaired)
     
+    def variant_pos_change_type(
+        self,
+        variant_pos: int,
+    ) -> bool: 
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+
+        if wt_structure[variant_pos] != variant_structure[variant_pos]:
+            return False
+        else:
+            return True
+    
 
     # def compare_probs(
     #     self,
