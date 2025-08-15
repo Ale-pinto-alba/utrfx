@@ -44,3 +44,25 @@ class TestRNAfolding:
         actual = folding.mfe_frequency_diff()
         
         assert actual == pytest.approx(-0.06, abs=0.1)
+
+    def test_hamming_distance(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.hamming_distance()
+        
+        assert actual == 18
+
+    def test_bp_distance(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.bp_distance()
+        
+        assert actual == 13

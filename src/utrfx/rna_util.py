@@ -44,6 +44,18 @@ class RNA_folding:
 
         return wt_mfe_frequency - variant_mfe_frequency
     
+    def hamming_distance(self) -> float: 
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        
+        return RNA.hamming_distance(wt_structure, variant_structure)
+    
+    def bp_distance(self) -> float: 
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        
+        return RNA.bp_distance(wt_structure, variant_structure)
+    
     def _pf(self):
         self._fc_wt.pf()
         self._fc_variant.pf()
