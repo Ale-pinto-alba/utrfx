@@ -26,10 +26,24 @@ class RNA_folding:
         return wt_mfe - variant_mfe
     
     def ensemble_diversity_diff(self) -> float: 
-        self._fc_wt.pf()
-        self._fc_variant.pf()           
+        self._pf()    
 
         wt_diversity = self._fc_wt.mean_bp_distance()
         variant_diversity = self._fc_variant.mean_bp_distance()
 
         return wt_diversity - variant_diversity
+    
+    def mfe_frequency_diff(self) -> float: 
+        self._pf()    
+
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        
+        wt_mfe_frequency = self._fc_wt.pr_structure(wt_structure)
+        variant_mfe_frequency = self._fc_variant.pr_structure(variant_structure)
+
+        return wt_mfe_frequency - variant_mfe_frequency
+    
+    def _pf(self):
+        self._fc_wt.pf()
+        self._fc_variant.pf()
