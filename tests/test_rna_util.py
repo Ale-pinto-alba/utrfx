@@ -22,3 +22,14 @@ class TestRNAfolding:
         actual = folding.mfe_diff()
         
         assert actual == pytest.approx(-0.4, abs=0.1)
+
+    def test_ensemble_diversity_diff(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.ensemble_diversity_diff()
+        
+        assert actual == pytest.approx(3, abs=0.1)

@@ -10,29 +10,26 @@ class RNA_folding:
     ):
         self._wt_sequence = wt_sequence
         self._variant_sequence = variant_sequence
-        # self._fc_wt = self._fc_variant_generator()
-    #     self._fc_variant = self._fc_variant_generator()
+        self._fc_wt = self._fc_wt_generator()
+        self._fc_variant = self._fc_variant_generator()
 
-    # def _fc_wt_generator(self) -> fold_compound: 
-    #     return fold_compound(self._fc_wt)
+    def _fc_wt_generator(self) -> RNA.fold_compound: 
+        return RNA.fold_compound(self._wt_sequence)
     
-    # def _fc_variant_generator(self) -> fold_compound: 
-    #     return fold_compound(self._fc_variant)
+    def _fc_variant_generator(self) -> RNA.fold_compound: 
+        return RNA.fold_compound(self._variant_sequence)
     
     def mfe_diff(self) -> float:
-        fc_wt = RNA.fold_compound(self._wt_sequence)
-        fc_variant = RNA.fold_compound(self._variant_sequence)
-
-        wt_structure, wt_mfe = fc_wt.mfe()
-        variant_structure, variant_mfe = fc_variant.mfe()
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
 
         return wt_mfe - variant_mfe
     
-    def mfe_diff(self) -> float:            
-        fc_wt = RNA.fold_compound(self._wt_sequence)
-        fc_variant = RNA.fold_compound(self._variant_sequence)
+    def ensemble_diversity_diff(self) -> float: 
+        self._fc_wt.pf()
+        self._fc_variant.pf()           
 
-        wt_structure, wt_mfe = fc_wt.mfe()
-        variant_structure, variant_mfe = fc_variant.mfe()
+        wt_diversity = self._fc_wt.mean_bp_distance()
+        variant_diversity = self._fc_variant.mean_bp_distance()
 
-        return wt_mfe - variant_mfe
+        return wt_diversity - variant_diversity
