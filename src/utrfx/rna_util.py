@@ -80,6 +80,17 @@ class RNA_folding:
 
         return (variant_unpaired * 100) / len(variant_structure)
     
+    def number_loops(self) -> float: 
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        
+        variant_pt = RNA.ptable(variant_structure)
+        variant_loops = RNA.loopidx_from_ptable(variant_pt)
+        
+        loop_idx = [variant_loops[i] for i in range(1, len(variant_pt))]
+        unique_loops = set(loop_idx)
+
+        return len(unique_loops)
+    
     def variant_pos_change_structural_element(
         self,
         variant_pos: int,
@@ -103,43 +114,47 @@ class RNA_folding:
             return "Stem"
         else:
             return "Unpaired"
-    
 
-    # def compare_probs(
-    #     self,
-    #     lbox1: list, 
-    #     ubox1: list, 
-    #     lbox2: list, 
-    #     ubox2: list,
-    # ):
-    #     sum_probs_first_seq = sum([x["score"] for x in lbox1 + ubox1])
-    #     suma_probs_second_seq = sum([x["score"] for x in lbox2 + ubox2])
-    #     probs_diff = sum_probs_first_seq - suma_probs_second_seq
+    def compare_probs(
+        self,
+        lbox1: list, 
+        ubox1: list, 
+        lbox2: list, 
+        ubox2: list,
+    ):
+        sum_probs_first_seq = sum([x["score"] for x in lbox1 + ubox1])
+        suma_probs_second_seq = sum([x["score"] for x in lbox2 + ubox2])
+        probs_diff = sum_probs_first_seq - suma_probs_second_seq
 
-    #     return probs_diff
-    
-    # def generate_probs(
-    #     self,
-    #     sequence: str,
-    #     threshold: float = 1e-5
-    # ):
-    #     lbox = []
-    #     ubox = []
+        return probs_diff
 
-    #     fc = RNA.fold_compound(sequence)
-    #     fc.pf()  # Calcula la función de partición
+    def generate_probs(
+        self,    
+        sequence: str, 
+        threshold: float = 1e-5,
+    ):
+        lbox = []
+        ubox = []
 
-    #     length = len(sequence)
+        fc = RNA.fold_compound(sequence)
+        fc.pf() 
 
-    #     for i in range(1, length + 1):
-    #         for j in range(i + 1, length + 1):
-    #             prob = fc.pr_ij(i, j)  # 👈 corrección aquí
-    #             if prob > threshold:
-    #                 entry = {"pos1": i, "pos2": j, "score": prob}
-    #                 if j - i == 1:
-    #                     lbox.append(entry)
-    #                 else:
-    #                     ubox.append(entry)
+        bpp_mat = fc.bpp()  
 
-    #     return lbox, ubox
+        for i in range(len(bpp_mat)):           
+            row = bpp_mat[i]                    
+            for j_offset, prob in enumerate(row):
+                j = i + j_offset + 1             
+                if prob > threshold:
+                    pos1 = i + 1                
+                    pos2 = j + 1
+                    entry = {"pos1": pos1, "pos2": pos2, "score": prob}
+                    if pos2 - pos1 == 1:
+                        lbox.append(entry)
+                    else:
+                        ubox.append(entry)
+
+        return lbox, ubox
+
+
     

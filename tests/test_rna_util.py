@@ -89,6 +89,17 @@ class TestRNAfolding:
         
         assert actual == pytest.approx(73, abs=0.5)
 
+    def test_number_loops(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.number_loops()
+        
+        assert actual == 5
+
     @pytest.mark.parametrize(
         "variant_pos, expected",
         [
@@ -129,16 +140,16 @@ class TestRNAfolding:
         
         assert actual == expected
 
-    # def test_total_probs_diff(
-    #     self,
-    #     wt_sequence: str, 
-    #     variant_sequence: str,
-    # ):
-    #     folding = RNA_folding(wt_sequence, variant_sequence)
+    def test_total_probs_diff(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
 
-    #     lbox_wt, ubox_wt = folding.generate_probs(wt_sequence)
-    #     lbox_variant, ubox_variant = folding.generate_probs(variant_sequence)
+        lbox_wt, ubox_wt = folding.generate_probs(wt_sequence)
+        lbox_variant, ubox_variant = folding.generate_probs(variant_sequence)
 
-    #     actual = folding.compare_probs(lbox_wt, ubox_wt, lbox_variant, ubox_variant)
+        actual = folding.compare_probs(lbox_wt, ubox_wt, lbox_variant, ubox_variant)
         
-    #     assert actual == 13
+        assert actual == pytest.approx(0.99, abs=0.1)
