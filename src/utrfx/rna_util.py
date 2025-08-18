@@ -73,6 +73,13 @@ class RNA_folding:
 
         return abs(wt_unpaired - variant_unpaired)
     
+    def unpaired_bases_percentage(self) -> float: 
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        
+        variant_unpaired = variant_structure.count('.')
+
+        return (variant_unpaired * 100) / len(variant_structure)
+    
     def variant_pos_change_structural_element(
         self,
         variant_pos: int,

@@ -78,6 +78,17 @@ class TestRNAfolding:
         
         assert actual == 10
 
+    def test_unpaired_bases_percentage(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.unpaired_bases_percentage()
+        
+        assert actual == pytest.approx(73, abs=0.5)
+
     @pytest.mark.parametrize(
         "variant_pos, expected",
         [
@@ -105,7 +116,7 @@ class TestRNAfolding:
             (15, "Stem"),  
         ]
     )
-    def test_variant_change(
+    def test_variant_structural_element(
         self,
         wt_sequence: str, 
         variant_sequence: str,
