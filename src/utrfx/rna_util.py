@@ -73,7 +73,7 @@ class RNA_folding:
 
         return abs(wt_unpaired - variant_unpaired)
     
-    def variant_pos_change_type(
+    def variant_pos_change_structural_element(
         self,
         variant_pos: int,
     ) -> bool: 
@@ -84,6 +84,18 @@ class RNA_folding:
             return True
         else:
             return False
+        
+    def variant_pos_structural_element(
+        self,
+        variant_pos: int,
+    ) -> bool: 
+        wt_structure, wt_mfe = self._fc_wt.mfe()
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+
+        if wt_structure[variant_pos] == "(" or wt_structure[variant_pos] == ")":
+            return "Stem"
+        else:
+            return "Unpaired"
     
 
     # def compare_probs(

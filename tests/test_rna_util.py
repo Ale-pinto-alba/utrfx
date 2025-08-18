@@ -94,7 +94,27 @@ class TestRNAfolding:
     ):
         folding = RNA_folding(wt_sequence, variant_sequence)
 
-        actual = folding.variant_pos_change_type(variant_pos)
+        actual = folding.variant_pos_change_structural_element(variant_pos)
+        
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        "variant_pos, expected",
+        [
+            (1, "Unpaired"),    
+            (15, "Stem"),  
+        ]
+    )
+    def test_variant_change(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+        variant_pos: int,
+        expected: bool,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.variant_pos_structural_element(variant_pos)
         
         assert actual == expected
 
