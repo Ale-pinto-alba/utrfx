@@ -78,16 +78,25 @@ class TestRNAfolding:
         
         assert actual == 10
 
+    @pytest.mark.parametrize(
+        "variant_pos, expected",
+        [
+            (1, True),    # Non changed position
+            (15, False),  # Position of the variant
+        ]
+    )
     def test_variant_change(
         self,
         wt_sequence: str, 
         variant_sequence: str,
+        variant_pos: int,
+        expected: bool,
     ):
         folding = RNA_folding(wt_sequence, variant_sequence)
 
-        actual = folding.variant_pos_change_type(15)
+        actual = folding.variant_pos_change_type(variant_pos)
         
-        assert actual == False
+        assert actual == expected
 
     # def test_total_probs_diff(
     #     self,

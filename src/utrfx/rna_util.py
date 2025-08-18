@@ -80,10 +80,10 @@ class RNA_folding:
         wt_structure, wt_mfe = self._fc_wt.mfe()
         variant_structure, variant_mfe = self._fc_variant.mfe()
 
-        if wt_structure[variant_pos] != variant_structure[variant_pos]:
-            return False
-        else:
+        if wt_structure[variant_pos] == variant_structure[variant_pos]:
             return True
+        else:
+            return False
     
 
     # def compare_probs(
