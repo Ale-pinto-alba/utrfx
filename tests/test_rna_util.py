@@ -116,7 +116,7 @@ class TestRNAfolding:
     ):
         folding = RNA_folding(wt_sequence, variant_sequence)
 
-        actual = folding.variant_pos_change_structural_element(variant_pos)
+        actual = folding.variant_pos_same_structural_element(variant_pos)
         
         assert actual == expected
 
