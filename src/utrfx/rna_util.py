@@ -127,7 +127,7 @@ class RNA_folding:
         variant_unpaired = self._variant_structure.count('.')
         return (variant_unpaired * 100) / len(self._variant_structure)
     
-    def number_loops(self) -> float: 
+    def number_loops(self) -> int: 
         variant_pt = RNA.ptable(self._variant_structure)
         variant_loops = RNA.loopidx_from_ptable(variant_pt)
         
