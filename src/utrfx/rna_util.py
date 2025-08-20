@@ -122,12 +122,35 @@ class RNA_folding:
         """
         Calculate the percentage of unpaired bases in the altered sequence.
 
-        Returns: a `float` with the percentage
+        Returns: a `float` with the percentage.
         """ 
         variant_unpaired = self._variant_structure.count('.')
         return (variant_unpaired * 100) / len(self._variant_structure)
     
-    def number_loops(self) -> int: 
+    def number_loops_diff(self) -> int: 
+        """
+        Calculate the difference in the number of loops in the sequence with the variant.
+
+        Returns: a `int` with the difference. 
+        """  
+        wt_pt = RNA.ptable(self._wt_structure)
+        wt_loops = RNA.loopidx_from_ptable(wt_pt)
+        variant_pt = RNA.ptable(self._variant_structure)
+        variant_loops = RNA.loopidx_from_ptable(variant_pt)        
+
+        wt_loop_idx = [wt_loops[i] for i in range(1, len(wt_pt))]
+        wt_unique_loops = set(wt_loop_idx)
+        var_loop_idx = [variant_loops[i] for i in range(1, len(variant_pt))]
+        var_unique_loops = set(var_loop_idx)
+
+        return len(wt_unique_loops) - len(var_unique_loops)
+    
+    def number_loops(self) -> int:
+        """
+        Count the number of loops in the sequence with the variant.
+
+        Returns: a `int` with the number of loops. 
+        """  
         variant_pt = RNA.ptable(self._variant_structure)
         variant_loops = RNA.loopidx_from_ptable(variant_pt)
         

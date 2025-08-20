@@ -89,6 +89,17 @@ class TestRNAfolding:
         
         assert actual == pytest.approx(73, abs=0.5)
 
+    def test_number_loops_diff(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.number_loops_diff()
+        
+        assert actual == 5
+
     def test_number_loops(
         self,
         wt_sequence: str, 
