@@ -1,3 +1,5 @@
+import numpy as np
+
 import RNA
 
 
@@ -191,63 +193,83 @@ class RNA_folding:
         else:
             return "Unpaired"
 
-    def generate_probs(
-        self,    
+    @staticmethod
+    def generate_ubox_probs(
         sequence: str, 
         threshold: float = 1e-5,
     ) -> list:
         """
-        Stores the base pairing probabilities between nucleotides. First, the base pairing probability matrix is generated,
-        and then sorted according to whether the elements are above the diagonal (ubox) or below the diagonal (lbox).
+        Stores the ubox base pairing probabilities between nucleotides.
 
         Args:
             sequence: a `str` containing the nucleotide sequence.
             threshold: a `float` to filter base pair probabilities.
 
-        Returns: two lists containing the base pair probabilities.
+        Returns: a `list` containing the ubox base pair probabilities.
         """
-        lbox = []
         ubox = []
-
         fc = RNA.fold_compound(sequence)
-        fc.pf() 
-
-        bpp_mat = fc.bpp()  
-
-        for i in range(len(bpp_mat)):           
-            row = bpp_mat[i]                    
-            for j_offset, prob in enumerate(row):
-                j = i + j_offset + 1             
-                if prob > threshold:
-                    pos1 = i + 1                
-                    pos2 = j + 1
-                    entry = {"pos1": pos1, "pos2": pos2, "score": prob}
-                    if pos2 - pos1 == 1:
-                        lbox.append(entry)
-                    else:
-                        ubox.append(entry)
-
-        return lbox, ubox
+        (propensity, ensemble_energy) = fc.pf()
+        basepair_probs = fc.bpp()
+        for i in range(1, len(sequence)+1):
+            for j in range(i+1, len(sequence)+1):
+                p = basepair_probs[i][j]
+                if p > threshold:
+                    ubox.append({"i": i, "j": j, "score": p})
+        return ubox
     
-    def compare_probs(
+    # def compare_lbox_probs(
+    #     self,
+    #     wt_lbox: list, 
+    #     variant_lbox: list, 
+    # ) -> float:
+    #     """
+    #     Compares and calculates the difference between all the lbox probabilities between both sequences.
+
+    #     Args:
+    #         lbox*: a `list` containing the lbox probabilities of a sequence.
+
+    #     Returns: a `float` with the difference.
+    #     """
+    #     # wt_sum_lbox = sum([x["score"] for x in lbox1])
+    #     # variant_sum_lbox = sum([x["score"] for x in lbox2])
+    #     # probs_diff = wt_sum_lbox - variant_sum_lbox
+    #     all_keys = set(wt_lbox) | set(variant_lbox)
+    #     diffs = [abs(wt_lbox.get(k, 0) - variant_lbox.get(k, 0)) for k in all_keys]
+    #     mean_diff = np.mean(diffs) if diffs else 0
+    #     return mean_diff
+    
+    def compare_ubox_probs(
         self,
-        lbox1: list, 
-        ubox1: list, 
-        lbox2: list, 
-        ubox2: list,
+        wt_ubox: list, 
+        variant_ubox: list, 
     ) -> float:
         """
-        Compares and calculates the difference between all the base pair probabilities between both sequences.
+        Compares and calculates the difference between all the ubox probabilities between both sequences.
 
         Args:
             ubox*: a `list` containing the ubox probabilities of a sequence.
-            lbox*: a `list` containing the lbox probabilities of a sequence.
 
         Returns: a `float` with the difference.
         """
-        sum_probs_first_seq = sum([x["score"] for x in lbox1 + ubox1])
-        suma_probs_second_seq = sum([x["score"] for x in lbox2 + ubox2])
-        probs_diff = sum_probs_first_seq - suma_probs_second_seq
-
+        wt_sum_ubox = sum([x["score"] for x in wt_ubox])
+        variant_sum_ubox = sum([x["score"] for x in variant_ubox])
+        probs_diff = wt_sum_ubox - variant_sum_ubox
         return probs_diff
     
+    # def compare_ubox_pairs(
+    #     self,
+    #     wt_ubox: list, 
+    #     variant_ubox: list, 
+    # ) -> float:
+    #     """
+    #     Compares and calculates the difference between all the ubox probabilities between both sequences.
+
+    #     Args:
+    #         ubox*: a `list` containing the ubox probabilities of a sequence.
+
+    #     Returns: a `float` with the difference.
+    #     """
+    #     return len(wt_ubox) - len(variant_ubox)
+    
+

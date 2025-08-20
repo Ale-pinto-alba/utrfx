@@ -151,16 +151,44 @@ class TestRNAfolding:
         
         assert actual == expected
 
-    def test_total_probs_diff(
+    def test_lbox_probs_diff(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding("GGAUACUCGAGGCCAUUGGCUACCGGAUUG", "GGAUACUCGAAGCCAUUGGCUACCGGAUUG")
+
+        lbox_wt, ubox_wt = folding.generate_probs("GGAUACUCGAGGCCAUUGGCUACCGGAUUG")
+        lbox_variant, ubox_variant = folding.generate_probs("GGAUACUCGAAGCCAUUGGCUACCGGAUUG")
+
+        actual = folding.compare_lbox_probs(lbox_wt, lbox_variant)
+        
+        assert actual == pytest.approx(3, abs=0.1)
+
+    def test_ubox_probs_diff(
         self,
         wt_sequence: str, 
         variant_sequence: str,
     ):
         folding = RNA_folding(wt_sequence, variant_sequence)
 
-        lbox_wt, ubox_wt = folding.generate_probs(wt_sequence)
-        lbox_variant, ubox_variant = folding.generate_probs(variant_sequence)
+        ubox_wt = folding.generate_ubox_probs(wt_sequence)
+        ubox_variant = folding.generate_ubox_probs(variant_sequence)
 
-        actual = folding.compare_probs(lbox_wt, ubox_wt, lbox_variant, ubox_variant)
+        actual = folding.compare_ubox_probs(ubox_wt, ubox_variant)
         
         assert actual == pytest.approx(0.99, abs=0.1)
+
+    # def test_ubox_pairs(
+    #     self,
+    #     wt_sequence: str, 
+    #     variant_sequence: str,
+    # ):
+    #     folding = RNA_folding(wt_sequence, variant_sequence)
+
+    #     lbox_wt, ubox_wt = folding.generate_probs(wt_sequence)
+    #     lbox_variant, ubox_variant = folding.generate_probs(variant_sequence)
+
+    #     actual = folding.compare_ubox_pairs(ubox_wt, ubox_variant)
+        
+    #     assert actual == 8
