@@ -199,7 +199,7 @@ class RNA_folding:
         threshold: float = 1e-5,
     ) -> list:
         """
-        Stores the ubox base pairing probabilities between nucleotides.
+        Stores the ubox base pairing probabilities between nucleotides of the sequence.
 
         Args:
             sequence: a `str` containing the nucleotide sequence.
@@ -217,6 +217,36 @@ class RNA_folding:
                 if p > threshold:
                     ubox.append({"i": i, "j": j, "score": p})
         return ubox
+    
+    @staticmethod
+    def generate_lbox_pairs(
+        sequence: str, 
+    ) -> list:
+        """
+        Stores the lbox pairs of the sequence.
+
+        Args:
+            sequence: a `str` containing the nucleotide sequence.
+
+        Returns: a `list` containing the lbox pairs.
+        """
+        lbox = []
+        fc = RNA.fold_compound(sequence)
+        mfe_struct, mfe_energy = fc.mfe()
+        stack = []
+        mfe_pairs = set()
+        for i, c in enumerate(mfe_struct):
+            pos = i + 1
+            if c == '(':
+                stack.append(pos)
+            elif c == ')':
+                if stack:
+                    j = stack.pop()
+                mfe_pairs.add((min(j, pos), max(j, pos)))
+
+        for pos1, pos2 in mfe_pairs:
+            lbox.append({"pos1": pos1, "pos2": pos2, "score": 0.95})
+        return lbox
     
     # def compare_lbox_probs(
     #     self,
@@ -271,5 +301,3 @@ class RNA_folding:
     #     Returns: a `float` with the difference.
     #     """
     #     return len(wt_ubox) - len(variant_ubox)
-    
-
