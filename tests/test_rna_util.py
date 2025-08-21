@@ -156,39 +156,43 @@ class TestRNAfolding:
         wt_sequence: str, 
         variant_sequence: str,
     ):
-        folding = RNA_folding(wt_sequence, variant_sequence)
+        lbox_wt = RNA_folding.generate_lbox_pairs(wt_sequence)
+        lbox_variant = RNA_folding.generate_lbox_pairs(variant_sequence)
 
-        lbox_wt = folding.generate_lbox_pairs(wt_sequence)
-        lbox_variant = folding.generate_lbox_pairs(variant_sequence)
-
-        actual = folding.compare_number_lbox_pairs(lbox_wt, lbox_variant)
+        actual = RNA_folding.compare_number_lbox_pairs(lbox_wt, lbox_variant)
 
         assert actual == 5
 
-    def test_ubox_probs_diff(
+    def test_ubox_total_probs_sum(
+        self,
+        variant_sequence: str,
+    ):
+        ubox_variant = RNA_folding.generate_ubox_probs(variant_sequence)
+
+        actual = RNA_folding.ubox_total_probs_sum(ubox_variant)
+        
+        assert actual == pytest.approx(5.2, abs=0.1)
+
+    def test_ubox_total_probs_diff(
         self,
         wt_sequence: str, 
         variant_sequence: str,
     ):
-        folding = RNA_folding(wt_sequence, variant_sequence)
+        ubox_wt = RNA_folding.generate_ubox_probs(wt_sequence)
+        ubox_variant = RNA_folding.generate_ubox_probs(variant_sequence)
 
-        ubox_wt = folding.generate_ubox_probs(wt_sequence)
-        ubox_variant = folding.generate_ubox_probs(variant_sequence)
-
-        actual = folding.compare_ubox_probs(ubox_wt, ubox_variant)
+        actual = RNA_folding.ubox_total_probs_diff(ubox_wt, ubox_variant)
         
         assert actual == pytest.approx(0.99, abs=0.1)
 
-    # def test_ubox_pairs(
-    #     self,
-    #     wt_sequence: str, 
-    #     variant_sequence: str,
-    # ):
-    #     folding = RNA_folding(wt_sequence, variant_sequence)
+    def test_ubox_mean_prob_diff(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        ubox_wt = RNA_folding.generate_ubox_probs(wt_sequence)
+        ubox_variant = RNA_folding.generate_ubox_probs(variant_sequence)
 
-    #     lbox_wt, ubox_wt = folding.generate_probs(wt_sequence)
-    #     lbox_variant, ubox_variant = folding.generate_probs(variant_sequence)
-
-    #     actual = folding.compare_ubox_pairs(ubox_wt, ubox_variant)
+        actual = RNA_folding.ubox_mean_prob_diff(ubox_wt, ubox_variant)
         
-    #     assert actual == 8
+        assert actual == pytest.approx(0.06, abs=0.1)

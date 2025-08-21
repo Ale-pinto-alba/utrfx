@@ -34,7 +34,7 @@ class RNA_folding:
     
     def _fc_variant_generator(self) -> RNA.fold_compound: 
         """
-        Return the `fold_compound`of the sequence with the variant.
+        Return the `fold_compound` of the sequence with the variant.
         """
         return RNA.fold_compound(self._variant_sequence)
     
@@ -131,7 +131,7 @@ class RNA_folding:
     
     def number_loops_diff(self) -> int: 
         """
-        Calculate the difference in the number of loops in the sequence with the variant.
+        Calculate the difference in the number of loops in the sequences.
 
         Returns: a `int` with the difference. 
         """  
@@ -209,7 +209,7 @@ class RNA_folding:
         threshold: float = 1e-5,
     ) -> list:
         """
-        Stores the ubox base pairing probabilities between nucleotides of the sequence.
+        Stores the ubox base pairing probabilities between nucleotides of a sequence.
 
         Args:
             sequence: a `str` containing the nucleotide sequence.
@@ -233,7 +233,7 @@ class RNA_folding:
         sequence: str, 
     ) -> list:
         """
-        Stores the lbox pairs of the sequence.
+        Stores the lbox pairs of a sequence.
 
         Args:
             sequence: a `str` containing the nucleotide sequence.
@@ -258,13 +258,13 @@ class RNA_folding:
             lbox.append({"pos1": pos1, "pos2": pos2, "score": 0.95})
         return lbox
     
+    @staticmethod
     def compare_number_lbox_pairs(
-        self,
         wt_lbox: list, 
         variant_lbox: list, 
     ) -> int:
         """
-        Calculates the difference between the number of lbox pairs between both sequences.
+        Calculates the difference between the number of lbox pairs between two sequences.
 
         Args:
             lbox*: a `list` containing the lbox probabilities of a sequence.
@@ -272,14 +272,27 @@ class RNA_folding:
         Returns: a `float` with the difference.
         """
         return len(wt_lbox) - len(variant_lbox)
+    
+    @staticmethod
+    def ubox_total_probs_sum(
+        ubox: list, 
+    ) -> float:
+        """
+        Calculates the sum of all ubox probabilities of a sequence.
+        Args:
+            ubox: a `list` containing the ubox probabilities of a sequence.
 
-    def compare_ubox_probs(
-        self,
+        Returns: a `float` with the sum.
+        """
+        return sum(entry["score"] for entry in ubox)
+
+    @staticmethod
+    def ubox_total_probs_diff(
         wt_ubox: list, 
         variant_ubox: list, 
     ) -> float:
         """
-        Compares and calculates the difference between all the ubox probabilities between both sequences.
+        Compares and calculates the difference between all the ubox probabilities between two sequences.
 
         Args:
             ubox*: a `list` containing the ubox probabilities of a sequence.
@@ -290,17 +303,31 @@ class RNA_folding:
         variant_sum_ubox = sum([x["score"] for x in variant_ubox])
         return wt_sum_ubox - variant_sum_ubox
     
-    # def compare_ubox_pairs(
-    #     self,
-    #     wt_ubox: list, 
-    #     variant_ubox: list, 
-    # ) -> float:
-    #     """
-    #     Compares and calculates the difference between all the ubox probabilities between both sequences.
+    @staticmethod
+    def ubox_mean_prob_diff(
+        wt_ubox: list, 
+        variant_ubox: list, 
+    ) -> float:
+        """
+        Calculates the mean absolute difference between the ubox probabilities between two sequences.
 
-    #     Args:
-    #         ubox*: a `list` containing the ubox probabilities of a sequence.
+        Args:
+            ubox*: a `list` containing the ubox probabilities of a sequence.
 
-    #     Returns: a `float` with the difference.
-    #     """
-    #     return len(wt_ubox) - len(variant_ubox)
+        Returns: a `float` with the difference.
+        """
+        all_pairs = {}
+
+        for entry in wt_ubox:
+            key = (entry["i"], entry["j"])
+            all_pairs[key] = [entry["score"], 0.0]
+
+        for entry in variant_ubox:
+            key = (entry["i"], entry["j"])
+            if key in all_pairs:
+                all_pairs[key][1] = entry["score"]
+            else:
+                all_pairs[key] = [0.0, entry["score"]]
+
+        diffs = [abs(wt - var) for wt, var in all_pairs.values()]
+        return sum(diffs) / len(diffs) if diffs else 0.0
