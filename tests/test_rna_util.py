@@ -196,3 +196,28 @@ class TestRNAfolding:
         actual = RNA_folding.ubox_mean_prob_diff(ubox_wt, ubox_variant)
         
         assert actual == pytest.approx(0.06, abs=0.1)
+
+    def test_shannon_entropy(
+        self,
+        variant_sequence: str,
+    ):
+        ubox_variant = RNA_folding.generate_ubox_probs(variant_sequence)
+
+        actual = RNA_folding.shannon_entropy(ubox_variant, len(variant_sequence))
+        
+        assert actual == pytest.approx(4.2, abs=0.1)
+
+    def test_shannon_entropy_diff(
+        self,
+        wt_sequence: str,
+        variant_sequence: str,
+    ):
+        ubox_wt = RNA_folding.generate_ubox_probs(wt_sequence)
+        ubox_variant = RNA_folding.generate_ubox_probs(variant_sequence)
+
+        wt_shannon_entropy = RNA_folding.shannon_entropy(ubox_wt, len(wt_sequence))        
+        variant_shannon_entropy = RNA_folding.shannon_entropy(ubox_variant, len(variant_sequence))
+        
+        actual = RNA_folding.shannon_entropy_diff(wt_shannon_entropy, variant_shannon_entropy)
+
+        assert actual == pytest.approx(0.4, abs=0.1)

@@ -331,3 +331,49 @@ class RNA_folding:
 
         diffs = [abs(wt - var) for wt, var in all_pairs.values()]
         return sum(diffs) / len(diffs) if diffs else 0.0
+    
+    @staticmethod
+    def shannon_entropy(
+        ubox: list, 
+        sequence_length: int,
+    ) -> float:
+        """
+        Calculates the Shannon Entropy of a sequence.
+
+        Args:
+            ubox: a `list` containing the ubox probabilities of a sequence.
+            sequence_length: an `int` containing the length of the sequence.
+
+        Returns: a `float` with the entropy value.
+        """
+        probs = [0.0] * (sequence_length + 1)
+
+        for entry in ubox:
+                i = entry['i']
+                j = entry['j']
+                p = entry['score']
+                probs[i] += p
+                probs[j] += p
+
+        total_prob = sum(probs)
+        if total_prob == 0:
+            return 0.0
+
+        probs = [p / total_prob for p in probs if p > 0]
+        entropy = -sum(p * np.log2(p) for p in probs)
+        return entropy
+    
+    @staticmethod
+    def shannon_entropy_diff(
+        wt_shannon_entropy: float,
+        variant_shannon_entropy: float,
+    ) -> float:
+        """
+        Calculates the Shannon Entropy difference between two sequences.
+
+        Args:
+            shannon_entropy*: a `float` with the Shannon Entropy value.
+
+        Returns: a `float` with the entropy value difference.
+        """
+        return wt_shannon_entropy - variant_shannon_entropy
