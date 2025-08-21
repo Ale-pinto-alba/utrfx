@@ -156,14 +156,14 @@ class TestRNAfolding:
         wt_sequence: str, 
         variant_sequence: str,
     ):
-        folding = RNA_folding("GGAUACUCGAGGCCAUUGGCUACCGGAUUG", "GGAUACUCGAAGCCAUUGGCUACCGGAUUG")
+        folding = RNA_folding(wt_sequence, variant_sequence)
 
-        lbox_wt, ubox_wt = folding.generate_probs("GGAUACUCGAGGCCAUUGGCUACCGGAUUG")
-        lbox_variant, ubox_variant = folding.generate_probs("GGAUACUCGAAGCCAUUGGCUACCGGAUUG")
+        lbox_wt = folding.generate_lbox_pairs(wt_sequence)
+        lbox_variant = folding.generate_lbox_pairs(variant_sequence)
 
-        actual = folding.compare_lbox_probs(lbox_wt, lbox_variant)
-        
-        assert actual == pytest.approx(3, abs=0.1)
+        actual = folding.compare_number_lbox_pairs(lbox_wt, lbox_variant)
+
+        assert actual == 5
 
     def test_ubox_probs_diff(
         self,

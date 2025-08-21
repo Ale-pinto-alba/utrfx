@@ -248,27 +248,21 @@ class RNA_folding:
             lbox.append({"pos1": pos1, "pos2": pos2, "score": 0.95})
         return lbox
     
-    # def compare_lbox_probs(
-    #     self,
-    #     wt_lbox: list, 
-    #     variant_lbox: list, 
-    # ) -> float:
-    #     """
-    #     Compares and calculates the difference between all the lbox probabilities between both sequences.
+    def compare_number_lbox_pairs(
+        self,
+        wt_lbox: list, 
+        variant_lbox: list, 
+    ) -> float:
+        """
+        Calculates the difference between the number of lbox pairs between both sequences.
 
-    #     Args:
-    #         lbox*: a `list` containing the lbox probabilities of a sequence.
+        Args:
+            lbox*: a `list` containing the lbox probabilities of a sequence.
 
-    #     Returns: a `float` with the difference.
-    #     """
-    #     # wt_sum_lbox = sum([x["score"] for x in lbox1])
-    #     # variant_sum_lbox = sum([x["score"] for x in lbox2])
-    #     # probs_diff = wt_sum_lbox - variant_sum_lbox
-    #     all_keys = set(wt_lbox) | set(variant_lbox)
-    #     diffs = [abs(wt_lbox.get(k, 0) - variant_lbox.get(k, 0)) for k in all_keys]
-    #     mean_diff = np.mean(diffs) if diffs else 0
-    #     return mean_diff
-    
+        Returns: a `float` with the difference.
+        """
+        return len(wt_lbox) - len(variant_lbox)
+
     def compare_ubox_probs(
         self,
         wt_ubox: list, 
@@ -284,8 +278,7 @@ class RNA_folding:
         """
         wt_sum_ubox = sum([x["score"] for x in wt_ubox])
         variant_sum_ubox = sum([x["score"] for x in variant_ubox])
-        probs_diff = wt_sum_ubox - variant_sum_ubox
-        return probs_diff
+        return wt_sum_ubox - variant_sum_ubox
     
     # def compare_ubox_pairs(
     #     self,
