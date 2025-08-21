@@ -274,6 +274,30 @@ class RNA_folding:
         return len(wt_lbox) - len(variant_lbox)
     
     @staticmethod
+    def jaccard_similarity(
+        wt_lbox: list, 
+        variant_lbox: list, 
+    ) -> int:
+        """
+        Calculates the Jaccard Similarity between the lbox pairs of two sequences.
+
+        Args:
+            lbox*: a `list` containing the lbox probabilities of a sequence.
+
+        Returns: a `float` with the Jaccard Similarity value.
+        """
+        wt_pairs = set((d["pos1"], d["pos2"]) for d in wt_lbox)
+        variant_pairs = set((d["pos1"], d["pos2"]) for d in variant_lbox)
+
+        intersection = wt_pairs & variant_pairs
+        union = wt_pairs | variant_pairs
+
+        if not union:
+            return 1.0
+
+        return len(intersection) / len(union)
+
+    @staticmethod
     def ubox_total_probs_sum(
         ubox: list, 
     ) -> float:

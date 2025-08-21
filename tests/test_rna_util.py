@@ -163,6 +163,18 @@ class TestRNAfolding:
 
         assert actual == 5
 
+    def test_jaccard_similarity(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        lbox_wt = RNA_folding.generate_lbox_pairs(wt_sequence)
+        lbox_variant = RNA_folding.generate_lbox_pairs(variant_sequence)
+
+        actual = RNA_folding.jaccard_similarity(lbox_wt, lbox_variant)
+
+        assert actual == pytest.approx(0, abs=0.1)
+
     def test_ubox_total_probs_sum(
         self,
         variant_sequence: str,
