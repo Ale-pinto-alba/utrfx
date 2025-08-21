@@ -161,21 +161,31 @@ class RNA_folding:
 
         return len(unique_loops)
     
-    def variant_pos_same_structural_element(
+    def structural_difference_at_variant_position(
         self,
         variant_pos: int,
-    ) -> bool:
+    ) -> int:
         """
-        Check if the type of structural element in the position of the variant is the same in both sequences, e.g. it goes
-        from unpaired to stem.
+        Calculates the difference in structural depth between the sequences.
 
-        Returns: a `bool` indicating if there is a change (False) or not (True). 
+        Arg:
+            variant_pos: `int` with the variant position within the sequence.
+
+        Returns: an `int` indicating the difference in cumulative structure score at the variant position. 
         """ 
-        if self._wt_structure[variant_pos] == self._variant_structure[variant_pos]:
-            return True
-        else:
-            return False
+        def _dot_bracket_depth(structure: str, variant_pos: int) -> int:
+            score = 0
+            for i in range(variant_pos + 1):
+                if structure[i] == '(':
+                    score += 1
+                elif structure[i] == ')':
+                    score -= 1
+            return score
         
+        wt_score = _dot_bracket_depth(self._wt_structure, variant_pos)
+        variant_score = _dot_bracket_depth(self._variant_structure, variant_pos)
+        return wt_score - variant_score
+
     def variant_pos_structural_element(
         self,
         variant_pos: int,
@@ -252,7 +262,7 @@ class RNA_folding:
         self,
         wt_lbox: list, 
         variant_lbox: list, 
-    ) -> float:
+    ) -> int:
         """
         Calculates the difference between the number of lbox pairs between both sequences.
 

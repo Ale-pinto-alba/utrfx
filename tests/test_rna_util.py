@@ -114,20 +114,20 @@ class TestRNAfolding:
     @pytest.mark.parametrize(
         "variant_pos, expected",
         [
-            (1, True),    # Non changed position
-            (15, False),  # Position of the variant
+            (1, 0),    # Non changed position
+            (15, 4),  # Position of the variant
         ]
     )
-    def test_variant_change(
+    def test_structural_difference_at_variant_position(
         self,
         wt_sequence: str, 
         variant_sequence: str,
         variant_pos: int,
-        expected: bool,
+        expected: int,
     ):
         folding = RNA_folding(wt_sequence, variant_sequence)
 
-        actual = folding.variant_pos_same_structural_element(variant_pos)
+        actual = folding.structural_difference_at_variant_position(variant_pos)
         
         assert actual == expected
 
