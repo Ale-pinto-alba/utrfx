@@ -109,7 +109,7 @@ class TestRNAfolding:
 
         actual = folding.unpaired_bases_diff()
         
-        assert actual == 10
+        assert actual == -10
 
     def test_unpaired_bases_percentage(
         self,

@@ -147,7 +147,7 @@ class RNA_folding:
         """
         wt_unpaired = self._wt_structure.count('.')
         variant_unpaired = self._variant_structure.count('.')
-        return abs(wt_unpaired - variant_unpaired)
+        return wt_unpaired - variant_unpaired
     
     def unpaired_bases_percentage(self) -> float:
         """
