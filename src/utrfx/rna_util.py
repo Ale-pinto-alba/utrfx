@@ -52,6 +52,15 @@ class RNA_folding:
         variant_structure, wt_mfe = self._fc_variant.mfe()
         return variant_structure
     
+    def variant_mfe(self) -> float:
+        """
+        Stores the Minimum Free Energy (MFE) ensemble of the altered sequence.
+
+        Returns: an `float` with the MFE value.
+        """
+        variant_structure, variant_mfe = self._fc_variant.mfe()
+        return variant_mfe
+
     def mfe_diff(self) -> float:
         """
         Calculate the difference between the Minimum Free Energy (MFE) ensemble of the wild-type and the altered sequence.
@@ -62,6 +71,16 @@ class RNA_folding:
         variant_structure, variant_mfe = self._fc_variant.mfe()
         return wt_mfe - variant_mfe
     
+    def variant_ensemble_diversity(self) -> float:
+        """
+        Stores the ensemble diversity of the altered sequence.
+
+        Returns: an `float` with the ensemble diversity value.
+        """
+        self._pf()    
+        variant_diversity = self._fc_variant.mean_bp_distance()
+        return variant_diversity
+
     def ensemble_diversity_diff(self) -> float:
         """
         Calculate the difference between the Ensemble diversity of the wild-type and the altered sequence.
@@ -74,6 +93,16 @@ class RNA_folding:
         variant_diversity = self._fc_variant.mean_bp_distance()
         return wt_diversity - variant_diversity
     
+    def variant_mfe_frequency(self) -> float:
+        """
+        Stores the MFE frequency of the altered sequence.
+
+        Returns: an `float` with the MFE frequency value.
+        """
+        self._pf()    
+        variant_mfe_frequency = self._fc_variant.pr_structure(self._variant_structure)
+        return variant_mfe_frequency
+
     def mfe_frequency_diff(self) -> float: 
         """
         Give the difference between the MFE frequency of the wild-type and the altered sequence.

@@ -12,6 +12,17 @@ def variant_sequence() -> str:
 
 class TestRNAfolding:
 
+    def test_variant_mfe(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.variant_mfe()
+        
+        assert actual == pytest.approx(-2, abs=0.1)
+
     def test_mfe_diff(
         self,
         wt_sequence: str, 
@@ -23,6 +34,17 @@ class TestRNAfolding:
         
         assert actual == pytest.approx(-0.4, abs=0.1)
 
+    def test_variant_ensemble_diversity(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.ensemble_diversity_diff()
+        
+        assert actual == pytest.approx(3, abs=0.1)
+
     def test_ensemble_diversity_diff(
         self,
         wt_sequence: str, 
@@ -33,6 +55,17 @@ class TestRNAfolding:
         actual = folding.ensemble_diversity_diff()
         
         assert actual == pytest.approx(3, abs=0.1)
+
+    def test_variant_mfe_frequency(
+        self,
+        wt_sequence: str, 
+        variant_sequence: str,
+    ):
+        folding = RNA_folding(wt_sequence, variant_sequence)
+
+        actual = folding.variant_mfe_frequency()
+        
+        assert actual == pytest.approx(0.2, abs=0.1)
     
     def test_mfe_frequency_diff(
         self,
