@@ -133,3 +133,39 @@ class TxperGene:
         Retrieve the canonical ENSEMBL transcript if available.
         """
         return self._dict.get(gene_symbol)
+    
+
+class TxCoordinatesperGene:
+    """
+    `TxCoordinatesperGene` is a container for 5'UTR Genomic Regions.
+    
+    :param tx_id: transcript identifier, e.g. `ENST00000381418`
+    :param five_utr: 5'UTR Genomic Region(s). 
+    """
+    def __init__(
+        self, 
+        gene_id: str,        
+        tx_id: str, 
+        coordinates: Region,
+    ):
+        assert isinstance(tx_id, str)
+        self._tx_id = tx_id
+        assert isinstance(gene_id, str)
+        self._gene_id = gene_id
+        assert isinstance(coordinates, Region)
+        self._coordinates = coordinates
+
+    @property
+    def tx_id(self) -> str:
+        return self._tx_id
+    
+    @property
+    def gene_id(self) -> str:
+        return self._gene_id
+
+    @property
+    def coordinates(self) -> Region:
+        return self._coordinates
+
+    def __repr__(self):
+        return f"TranscriptCoordinates(gene_id= {self._gene_id}, tx_id={self._tx_id}, coordinates={self._coordinates})"

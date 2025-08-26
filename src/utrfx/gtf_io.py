@@ -4,8 +4,8 @@ import re
 import pandas as pd
 import numpy as np
 
-from utrfx.genome import GenomeBuild, GenomicRegion, Strand
-from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates
+from utrfx.genome import GenomeBuild, GenomicRegion, Strand, Region
+from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates, TxCoordinatesperGene
 
 class GTFio:
     """
@@ -40,6 +40,7 @@ class GTFio:
 
         fields = [
             "transcript_id",
+            "gene_name"
         ]
         for field in fields:
             gtf_df[field] = gtf_df["attribute"].apply(
@@ -49,7 +50,7 @@ class GTFio:
         pd.set_option("future.no_silent_downcasting", True)
         gtf_df.replace('', np.nan, inplace=True)
         gtf_df.drop(["source", "score", "frame", "attribute"], axis=1, inplace=True)
-        assert list(gtf_df.columns) == ["seqname", "feature", "start", "end", "strand", "transcript_id"]
+        assert list(gtf_df.columns) == ["seqname", "feature", "start", "end", "strand", "transcript_id", "gene_name"]
 
         return gtf_df
 
@@ -107,6 +108,20 @@ class GTFio:
                     )
 
         return transcripts 
+
+    def extract_tx_per_gene_coordinates(
+            self,
+        ) -> typing.Collection[TxCoordinatesperGene]:
+            """
+            Obtain transcripts coordinates per gene in the GTF file.
+            """
+            tx_df = self._gtf_df[self._gtf_df["feature"] == "transcript"]
+            transcripts_coordinates = [
+                TxCoordinatesperGene(gene_id=row["gene_name"], tx_id=row["transcript_id"], coordinates=Region(start=row["start"], end=row["end"]))
+                for _, row in tx_df.iterrows()
+            ]
+
+            return transcripts_coordinates 
 
     def _parse_strand(
         self,

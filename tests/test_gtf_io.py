@@ -61,3 +61,21 @@ class TestGtfIo:
         assert four.start_on_strand(Strand.POSITIVE) == 23_976_892
         assert four.end_on_strand(Strand.POSITIVE) == 23_977_067
         assert four.strand == Strand.NEGATIVE
+
+    def test_read_gtf_into_txs_coordinates(
+            self,
+            fpath_example_gtf: str,
+        ):
+            gtf_file = GTFio(fpath= fpath_example_gtf)
+            transcripts_coordinates = gtf_file.extract_tx_per_gene_coordinates()
+
+            assert len(transcripts_coordinates) == 6
+
+            for tx_coordinate in transcripts_coordinates:
+                 if tx_coordinate.tx_id == "ENST00000649746.2":
+                    our_favorite_tx = tx_coordinate
+                    break   
+                 
+            assert our_favorite_tx.gene_id == "ADA2"
+            assert our_favorite_tx.coordinates.start == 17_178_790
+            assert our_favorite_tx.coordinates.end == 17_258_235
