@@ -1,0 +1,2 @@
+tx_id	AF	Source	MFE_diff	Ensemble_diversity_diff	MFE_frequency_diff	Hamming_distance	BP_distance	Total_prob_diff	IRES	Var_to_cap_dist	Var_to_CDS_dist
+ENST00000377205-chr1-9943502-A-T	Nan	ReMM	3.700000762939453	18.33021115019389	-0.011760311424703802	59	42	3.567415053000005	0	27	70

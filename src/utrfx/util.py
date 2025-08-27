@@ -1,6 +1,8 @@
 import typing
 
 import requests
+import pandas as pd
+import numpy as np
 
 from utrfx.genome import Region
 from utrfx.model import FiveUTRCoordinates, UORFCoordinates
@@ -72,3 +74,12 @@ def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.C
             start_position = start_index + 1  
 
     return uorfs
+
+def sum_all_features(row: pd.Series) -> float:
+    """
+    Sum all numeric values in a row (ignoring non-numeric columns).
+    
+    :param row: A row from a pandas DataFrame.
+    """
+    numeric_row = pd.to_numeric(row, errors='coerce')
+    return numeric_row.sum()
