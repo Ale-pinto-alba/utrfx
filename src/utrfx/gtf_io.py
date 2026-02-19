@@ -4,12 +4,14 @@ import re
 import pandas as pd
 import numpy as np
 
-from utrfx.genome import GenomeBuild, GenomicRegion, Strand
-from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates
+from utrfx.genome import GenomeBuild, GenomicRegion, Strand, Region
+from utrfx.model import FiveUTRCoordinates, TranscriptCoordinates, TxCoordinatesperGene
 
 class GTFio:
     """
     Parse a GTF file and return the available transcripts (as TranscriptCoordinates class).
+
+    It is tested in the GENCODE GTF file, others GTF files may change the manner of indicating UTRs.
     """
     def __init__(
         self,
@@ -38,6 +40,7 @@ class GTFio:
 
         fields = [
             "transcript_id",
+            "gene_name"
         ]
         for field in fields:
             gtf_df[field] = gtf_df["attribute"].apply(
@@ -47,52 +50,11 @@ class GTFio:
         pd.set_option("future.no_silent_downcasting", True)
         gtf_df.replace('', np.nan, inplace=True)
         gtf_df.drop(["source", "score", "frame", "attribute"], axis=1, inplace=True)
-        assert list(gtf_df.columns) == ["seqname", "feature", "start", "end", "strand", "transcript_id"]
+        assert list(gtf_df.columns) == ["seqname", "feature", "start", "end", "strand", "transcript_id", "gene_name"]
 
         return gtf_df
-    
-    def extract_five_utrs_if_explicit(
-        self,
-        genome_build: GenomeBuild,
-    ) -> typing.Collection[TranscriptCoordinates]:
-        """
-        Obtain transcripts if the 5'UTR regions are reported in the GTF file. 
-        """
-        possible_names = ["five_prime_utr", "5utr", "5UTR"]
-        utr_df = self._gtf_df[self._gtf_df["feature"].isin(possible_names)]
-        transcripts = []
 
-        for transcript_id, group in utr_df.groupby("transcript_id"):
-            contig = genome_build.contig_by_name(str(group["seqname"].iloc[0]))
-            if contig is None:
-                print("No contig found.")
-            else:
-                temp_utr_5prime_list = []
-
-                for _, row in group.iterrows():
-                    actual_feature_strand = self._parse_strand(row["strand"])
-                    utr_region = GenomicRegion(
-                        contig=contig,
-                        start=row["start"] - 1, 
-                        end=row["end"],
-                        strand=Strand.POSITIVE,
-                    ).with_strand(actual_feature_strand)
-
-                    temp_utr_5prime_list.append(utr_region)
-                
-                if temp_utr_5prime_list:
-                    transcripts.append(
-                        TranscriptCoordinates(
-                            tx_id=transcript_id,
-                            five_utr=FiveUTRCoordinates(
-                                regions=temp_utr_5prime_list,
-                            ),
-                        )
-                    )
-
-        return transcripts
-    
-    def extract_five_utrs_if_not_explicit(
+    def extract_five_utrs(
         self,
         genome_build: GenomeBuild,
     ) -> typing.Collection[TranscriptCoordinates]:
@@ -146,6 +108,20 @@ class GTFio:
                     )
 
         return transcripts 
+
+    def extract_tx_per_gene_coordinates(
+            self,
+        ) -> typing.Collection[TxCoordinatesperGene]:
+            """
+            Obtain transcripts coordinates per gene in the GTF file.
+            """
+            tx_df = self._gtf_df[self._gtf_df["feature"] == "transcript"]
+            transcripts_coordinates = [
+                TxCoordinatesperGene(gene_id=row["gene_name"], tx_id=row["transcript_id"], coordinates=Region(start=row["start"], end=row["end"]))
+                for _, row in tx_df.iterrows()
+            ]
+
+            return transcripts_coordinates 
 
     def _parse_strand(
         self,

@@ -3,7 +3,7 @@ import os
 
 import pysam
 
-from utrfx.genome import VariantCoordinates, Strand, Contig
+from utrfx.genome import VariantCoordinates, Strand, Contig, Region
 from utrfx.model import FiveUTRCoordinates
 
 class AltAlleleSeq:
@@ -189,22 +189,40 @@ class VCFfile:
         :param variant: single variant as `VariantCoordinates`class instance.
         """
         assert self._vcf_file is not None, "VCF file must be used as a context manager"
+
+        af_field = self._get_af_field()
+        if af_field is None:
+            return None 
+
         contig = f"chr{variant.chrom}"
         for rec in self._vcf_file.fetch(contig, variant.start, variant.end):
-            af_tuple = rec.info.get('AF', None)
+            af_tuple = rec.info.get(af_field, None)
             if af_tuple is None:
                 continue
             for af_index, alt in enumerate(rec.alts):
                 if alt == variant.alt:
                     return af_tuple[af_index]
         return None
+    
+    def _get_af_field(self):
+        """
+        Determines which AF field is present in the VCF header: 'AF_joint' or 'AF'.
+        """
+        assert self._vcf_file is not None, "VCF file must be used as a context manager"
+        if 'AF_joint' in self._vcf_file.header.info:
+            return 'AF_joint'
+        elif 'AF' in self._vcf_file.header.info:
+            return 'AF'
+        else:
+            return None
 
 class VariantClassifier:
     """
-    `MutationClassifier` allows the determination of the mutation type of a given variant.
+    `MutationClassifier` allows the determination of the mutation type of a given variant and which uORF is affected.
     """
     def __init__(
         self,
+        canonical_uorfs_coordinates_list: typing.Collection[Region],
         canonical_uorfs_lengths_list: typing.Collection[int],
         variant_uorfs_lengths_list: typing.Collection[int],
         canonical_uorfs_ouorf_list: typing.Collection[bool],
@@ -220,12 +238,21 @@ class VariantClassifier:
         :param uorf_end_pos: integer corresponding to the end of the uORF.
         :param variant_cdna_pos: integer corresponding to the variant position within the cDNA sequence.
         """
+        self._canonical_uorf_coordinates_list = canonical_uorfs_coordinates_list
         self._canonical_uorfs_lengths_list = canonical_uorfs_lengths_list
         self._variant_uorfs_lengths_list = variant_uorfs_lengths_list
         self._canonical_uorfs_ouorf_list = canonical_uorfs_ouorf_list
         self._variant_uorfs_ouorf_list = variant_uorfs_ouorf_list
         self._uorf_end_pos_list = uorf_end_pos_list
         self._variant_cdna_pos = variant_cdna_pos
+
+    def _check_if_mutation_in_uorf(self) -> typing.Optional[str]:
+        variant_in_uorf = False
+        for uorf_region in self._canonical_uorf_coordinates_list:
+            if uorf_region.start <= self._variant_cdna_pos <= uorf_region.end:
+                variant_in_uorf = True
+        if variant_in_uorf == False:
+            return "Variant does not affect any canonical uORF"
 
     def _mutation_classifier_start_codon(self) -> typing.Optional[str]:
         """
@@ -272,6 +299,9 @@ class VariantClassifier:
         """
         Check which kind of variant is it.
         """
+        variant_not_in_uorf = self._check_if_mutation_in_uorf()
+        if variant_not_in_uorf:
+            return variant_not_in_uorf
         start_codon_mutation = self._mutation_classifier_start_codon()
         if start_codon_mutation:
             return start_codon_mutation
@@ -284,3 +314,129 @@ class VariantClassifier:
         indel_snv_mutation = self._mutation_classifier_indel_snv()
         if indel_snv_mutation:
             return indel_snv_mutation
+        
+    def uorf_affected(self) -> typing.Optional[int]:
+        """
+        Determine which uORF is affected by the variant.
+        """
+        for uorf_index, uorf_region in enumerate(self._canonical_uorf_coordinates_list):
+            if uorf_region.start <= self._variant_cdna_pos <= uorf_region.end:
+                return uorf_index + 1
+        return None
+    
+class VariantAA:
+
+    def __init__(
+        self,
+        five_prime_seq: str,
+        uorf_coordinates: Region,
+        variant_cdna_pos: int
+    ):
+        self._five_prime_seq = five_prime_seq
+        self._uorf_coordinates = uorf_coordinates
+        self._variant_cdna_pos = variant_cdna_pos
+    
+    def variant_codon(self) -> typing.Optional[str]:
+        """
+        Return the codon that contains the variant.
+
+        Work only for SNV.
+        """
+        for i in range(self._uorf_coordinates.start, self._uorf_coordinates.end, 3):
+            codon = self._five_prime_seq[i:i + 3]
+            if i <= self._variant_cdna_pos < i + 3:
+                return codon
+        return None
+    
+    @staticmethod
+    def variant_amino_acid(codon: str) -> str:
+        """
+        Retrieve the amino acid coded by the codon.
+        """
+        aa_dict = { 
+        'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M', 
+        'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T', 
+        'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K', 
+        'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',                  
+        'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L', 
+        'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P', 
+        'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q', 
+        'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R', 
+        'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V', 
+        'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A', 
+        'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E', 
+        'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G', 
+        'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S', 
+        'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L', 
+        'TAC':'Y', 'TAT':'Y', 'TAA':'_', 'TAG':'_', 
+        'TGC':'C', 'TGT':'C', 'TGA':'_', 'TGG':'W', 
+        } 
+        if codon in aa_dict.keys():
+            return aa_dict[codon]
+    
+    @staticmethod
+    def amino_acids_difference_score(
+        amino_acid_one: str,
+        amino_acid_two: str,
+    ) -> typing.Optional[int]:
+        """
+        Obtain the value corresponding to the BLOSUM62 value between two amino acids.
+        """
+        blosum62 = {
+            'A': [4, 0, -2, -1, -2, 0, -2, -1, -1, -1, -1, -2, -1, -1, -1, 1, 0, 0, -3, -2],
+            'C': [0, 9, -3, -4, -2, -3, -3, -1, -3, -1, -1, -3, -3, -3, -3, -1, -1, -1, -2, -2],
+            'D': [-2, -3, 6, 2, -3, -1, -1, -3, -1, -4, -3, 1, -1, 0, -2, 0, -1, -3, -4, -3],
+            'E': [-1, -4, 2, 5, -3, -2, 0, -3, 1, -3, -2, 0, -1, 2, 0, 0, -1, -2, -3, -2],
+            'F': [-2, -2, -3, -3, 6, -3, -1, 0, -3, 0, 0, -3, -4, -3, -3, -2, -2, -1, 1, 3],
+            'G': [0, -3, -1, -2, -3, 6, -2, -4, -2, -4, -3, 0, -2, -2, -2, 0, -2, -3, -2, -3],
+            'H': [-2, -3, -1, 0, -1, -2, 8, -3, -1, -3, -2, 1, -2, 0, 0, -1, -2, -3, -2, 2],
+            'I': [-1, -1, -3, -3, 0, -4, -3, 4, -3, 2, 1, -3, -3, -3, -3, -2, -1, 3, -3, -1],
+            'K': [-1, -3, -1, 1, -3, -2, -1, -3, 5, -2, -1, 0, -1, 1, 2, 0, -1, -2, -3, -2],
+            'L': [-1, -1, -4, -3, 0, -4, -3, 2, -2, 4, 2, -3, -3, -2, -2, -2, -1, 1, -2, -1],
+            'M': [-1, -1, -3, -2, 0, -3, -2, 1, -1, 2, 5, -2, -2, 0, -1, -1, -1, 1, -1, -1],
+            'N': [-2, -3, 1, 0, -3, 0, 1, -3, 0, -3, -2, 6, -2, 0, 0, 1, 0, -3, -4, -2],
+            'P': [-1, -3, -1, -1, -4, -2, -2, -3, -1, -3, -2, -2, 7, -1, -2, -1, -1, -2, -4, -3],
+            'Q': [-1, -3, 0, 2, -3, -2, 0, -3, 1, -2, 0, 0, -1, 5, 1, 0, -1, -2, -2, -1],
+            'R': [-1, -3, -2, 0, -3, -2, 0, -3, 2, -2, -1, 0, -2, 1, 5, -1, -1, -3, -3, -2],
+            'S': [1, -1, 0, 0, -2, 0, -1, -2, 0, -2, -1, 1, -1, 0, -1, 4, 1, -2, -3, -2],
+            'T': [0, -1, -1, -1, -2, -2, -2, -1, -1, -1, -1, 0, -1, -1, -1, 1, 5, 0, -2, -2],
+            'V': [0, -1, -3, -2, -1, -3, -3, 3, -2, 1, 1, -3, -2, -2, -3, -2, 0, 4, -3, -1],
+            'W': [-3, -2, -4, -3, 1, -2, -2, -3, -3, -2, -1, -4, -4, -2, -3, -3, -2, -3, 11, 2],
+            'Y': [-2, -2, -3, -2, 3, -3, 2, -1, -2, -1, -1, -2, -3, -1, -2, -2, -2, -1, 2, 7],
+        }
+        amino_acids = list(blosum62.keys())
+        index = amino_acids.index(amino_acid_two)
+        return blosum62[amino_acid_one][index]
+    
+    @staticmethod
+    def codon_usage(codon) -> float:
+        """
+        Retrieve the codon usage frequency in 1000.
+
+        Krishnamurthy Subramanian, Bryan Payne, Felix Feyertag, David Alvarez-Ponce, 
+        The Codon Statistics Database: A Database of Codon Usage Bias, Molecular Biology and Evolution, Volume 39, Issue 8, August 2022, msac157, 
+        https://doi.org/10.1093/molbev/msac157
+        """
+        codon_frequency = {
+            "AAA": 25.1901, "AAG": 31.4481, "AAT": 17.0444, "AAC": 18.3501,
+            "ACA": 15.3184, "ACC": 18.4242, "ACG": 5.9236, "ACT": 13.5182,
+            "AGA": 12.3146, "AGC": 19.9075, "AGG": 12.1033, "AGT": 12.6984,
+            "ATA": 7.5636, "ATC": 19.3821, "ATT": 15.7146, "ATG": 21.0300,
+
+            "CAA": 12.8031, "CAG": 34.5800, "CAT": 11.1677, "CAC": 15.0600,
+            "CCA": 17.5929, "CCC": 20.4863, "CCG": 7.4462, "CCT": 18.2084,
+            "CGA": 6.0584, "CGC": 10.3363, "CGG": 11.3963, "CGT": 4.4912,
+            "CTA": 7.1547, "CTC": 19.0061, "CTG": 38.7259, "CTT": 13.3863,
+
+        
+            "GAA": 30.4087, "GAG": 40.0424, "GAT": 22.0502, "GAC": 24.8107,
+            "GCA": 16.1205, "GCC": 27.8499, "GCG": 7.6763, "GCT": 18.3994,
+            "GGA": 16.6903, "GGC": 22.2317, "GGG": 16.4639, "GGT": 10.6731,
+            "GTA": 7.1527, "GTC": 13.9037, "GTG": 27.0722, "GTT": 10.9735,
+
+            "TAA": 0.4856, "TAG": 0.3822, "TAT": 11.8554, "TAC": 14.3091,
+            "TCA": 12.9278, "TCC": 17.7956, "TCG": 4.5676, "TCT": 15.7052, 
+            "TGA": 0.8420, "TGC": 12.3082, "TGG": 12.2384, "TGT": 10.7211, 
+            "TTA": 7.8952, "TTC": 19.1588, "TTG": 12.9418, "TTT": 16.9475,
+        }
+        return codon_frequency[codon]

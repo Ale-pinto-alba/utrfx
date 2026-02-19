@@ -1,7 +1,10 @@
+
+import os 
 import pytest
+import pandas as pd
 
 from utrfx.model import FiveUTRCoordinates
-from utrfx.util import fetch_cdna_from_ensembl, uorf_extractor
+from utrfx.util import fetch_cdna_from_ensembl, uorf_extractor, sum_all_features
 
 
 @pytest.mark.online
@@ -48,3 +51,15 @@ def test_uorf_extractor(
     assert fourth_uorf.uorf.start == 606
     assert fourth_uorf.uorf.end == 623
     assert fourth_uorf.ouorf == True
+
+@pytest.fixture(scope="module")
+def example_tsv(fpath_data_dir: str) -> str:
+     return os.path.join(fpath_data_dir,  "Results_example.tsv")
+
+def test_sum_all_features(
+     example_tsv: str,
+):
+     df = pd.read_csv(example_tsv, sep="\t")
+     row = df.iloc[0]
+     
+     assert sum_all_features(row) == pytest.approx(expected=223.5, rel=0.1)

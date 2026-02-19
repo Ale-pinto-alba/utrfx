@@ -106,6 +106,9 @@ def kozak_sequence_strength(five_sequence: str, uorf: UORFCoordinates) -> int:
     Bioessays. 2010 Oct;32(10):885-93. doi: 10.1002/bies.201000037. Epub 2010 Aug 19. PMID: 20726009; PMCID: PMC3045505.
     """
     purines = ["A", "G"]
+    if (uorf.uorf.start - 3) < 0 or (uorf.uorf.start + 3) >= len(five_sequence):
+        return "Out of index"
+
     minus_three_residue = five_sequence[uorf.uorf.start - 3]
     plus_four_residue = five_sequence[uorf.uorf.start + 3]
 

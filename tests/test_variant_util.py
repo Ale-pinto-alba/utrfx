@@ -3,9 +3,9 @@ import pytest
 import typing
 
 
-from utrfx.variant_util import AltAlleleSeq, VCFfile, VariantClassifier
+from utrfx.variant_util import AltAlleleSeq, VCFfile, VariantClassifier, VariantAA
 from utrfx.model import FiveUTRCoordinates
-from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild
+from utrfx.genome import Contig, GenomicRegion, Strand, VariantCoordinates, GenomeBuild, Region
 
 class TestPrepareAltSeq:
     """
@@ -383,36 +383,164 @@ class TestVCFFile:
              
         assert e.value.args == ("VCFfile must be used as a context manager",)
  
-@pytest.mark.parametrize(
-    "canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos_list, variant_cdna_pos, expected",
-    [
-        ([9, 9], [9, 9, 9], [False, False], [False, False, False], [0, 0], 0, "Start codon gain mutation"),
-        ([9, 9], [9], [False, False], [False], [0, 0], 0, "Start codon loss mutation"),
-        ([9, 9], [9, 12], [False, False], [False, True], [0, 9], 8, "Stop codon loss mutation"),
-        ([9, 9], [9, 6], [False, False], [False, False], [0, 0], 0, "Stop codon gain mutation"),
-        ([9, 9], [9, 3], [False, False], [False, True], [0, 9], 6, "Deletion"),
-        ([9, 9], [9, 12], [False, False], [False, True], [0, 9], 3, "Insertion"),
-         ([9, 9], [9, 9], [False, False], [False, False], [0, 9], 0, "SNV or MNV"),           
-    ]
-)
-def test_variant_classifier(
-    canonical_lengths: typing.Collection[int],
-    variant_lengths: typing.Collection[int],
-    canonical_ouorf: typing.Collection[bool],
-    variant_ouorf: typing.Collection[bool],
-    uorf_end_pos_list: int,
-    variant_cdna_pos: int,
-    expected: str,
-):
-    mut_class = VariantClassifier(
-        canonical_lengths,
-        variant_lengths,
-        canonical_ouorf,
-        variant_ouorf,
-        uorf_end_pos_list,
-        variant_cdna_pos,
+class TestVariantClassifier:
+    @pytest.mark.parametrize(
+        "canonical_uorfs_coordinates_list, canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos_list, variant_cdna_pos, expected",
+        [
+            ([Region(10,11), Region(12,13)], [9, 9], [9], [False, False], [False], [0, 0], 0, "Variant does not affect any canonical uORF"),
+            ([Region(0,3), Region(12,13)], [9, 9], [9, 9, 9], [False, False], [False, False, False], [0, 0], 2, "Start codon gain mutation"),
+            ([Region(0,3), Region(12,13)], [9, 9], [9], [False, False], [False], [0, 0], 2, "Start codon loss mutation"),
+            ([Region(5,10), Region(12,13)], [9, 9], [9, 12], [False, False], [False, True], [0, 9], 8, "Stop codon loss mutation"),
+            ([Region(0,3), Region(12,13)], [9, 9], [9, 6], [False, False], [False, False], [0, 0], 2, "Stop codon gain mutation"),
+            ([Region(0,9), Region(12,13)], [9, 9], [9, 3], [False, False], [False, True], [0, 9], 6, "Deletion"),
+            ([Region(0,4), Region(12,13)], [9, 9], [9, 12], [False, False], [False, True], [0, 9], 3, "Insertion"),
+            ([Region(0,3), Region(12,13)], [9, 9], [9, 9], [False, False], [False, False], [0, 9], 2, "SNV or MNV"),           
+        ]
     )
+    def test_variant_classifier(
+        self,
+        canonical_uorfs_coordinates_list: typing.Collection[Region],
+        canonical_lengths: typing.Collection[int],
+        variant_lengths: typing.Collection[int],
+        canonical_ouorf: typing.Collection[bool],
+        variant_ouorf: typing.Collection[bool],
+        uorf_end_pos_list: int,
+        variant_cdna_pos: int,
+        expected: str,
+    ):
+        mut_class = VariantClassifier(
+            canonical_uorfs_coordinates_list,
+            canonical_lengths,
+            variant_lengths,
+            canonical_ouorf,
+            variant_ouorf,
+            uorf_end_pos_list,
+            variant_cdna_pos,
+        )
 
-    type_mut = mut_class.perform_mutation_analysis()
-    assert type_mut == expected
-        
+        type_mut = mut_class.perform_mutation_analysis()
+        assert type_mut == expected
+
+    @pytest.mark.parametrize(
+        "canonical_uorfs_coordinates_list, canonical_lengths, variant_lengths, canonical_ouorf, variant_ouorf, uorf_end_pos_list, variant_cdna_pos, expected",
+        [
+            ([Region(0,3), Region(12,13)], [9, 9], [9, 9], [False, False], [False, False], [0, 9], 2, 1),    
+            ([Region(0,3), Region(12,13)], [9, 9], [9, 9], [False, False], [False, False], [0, 9], 12, 2),
+            ([Region(0,3), Region(12,13)], [9, 9], [9, 9], [False, False], [False, False], [0, 9], 11, None),         
+        ]
+    )
+    def test_uorf_affected(
+        self,
+        canonical_uorfs_coordinates_list: typing.Collection[Region],
+        canonical_lengths: typing.Collection[int],
+        variant_lengths: typing.Collection[int],
+        canonical_ouorf: typing.Collection[bool],
+        variant_ouorf: typing.Collection[bool],
+        uorf_end_pos_list: int,
+        variant_cdna_pos: int,
+        expected: str,
+    ):
+        mut_class = VariantClassifier(
+            canonical_uorfs_coordinates_list,
+            canonical_lengths,
+            variant_lengths,
+            canonical_ouorf,
+            variant_ouorf,
+            uorf_end_pos_list,
+            variant_cdna_pos,
+        )
+
+        type_mut = mut_class.uorf_affected()
+        assert type_mut == expected
+
+class TestVariantAA:
+
+    @pytest.fixture(scope="class")
+    def five_prime_seq(self) -> str:
+        """
+        28 bases corresponding to a fake cDNA sequence
+        of the 5'UTR region of a fake transcript.
+
+        The sequence originates contains two 9-nt long uORFS
+        surrounded by two 5-cytosine regions.
+        """
+        # Fake transcript sequence:
+        # 
+        #                 first uORF    second uORF
+        return "CCCCC" + "ATGCTTTAG" + "ATGGGGTAA" + "CCCCC"
+    
+    @pytest.mark.parametrize(
+        "start, end, variant_cdna_pos, expected",
+        [
+            (5, 14, 9, "CTT"),
+            (5, 14, 13, "TAG"),
+            (5, 14, 1, None), # Variant out of the uORFs
+            (5, 14, 18, None), # Variant not in the given uORF coordinates
+            (14, 23, 16, "ATG"),
+            (14, 23, 17, "GGG"),
+        ]
+    )
+    def test_variant_codon(
+        self,
+        start: int,
+        end: int, 
+        variant_cdna_pos: int,
+        expected: typing.Optional[str],
+        five_prime_seq: str,
+    ):
+        variant_class = VariantAA(five_prime_seq, Region(start, end), variant_cdna_pos)
+
+        assert variant_class.variant_codon() == expected
+
+    @pytest.mark.parametrize(
+        "codon, expected",
+        [
+            ("TAG", "_"),
+            ("CGC", "R"),
+        ]
+    )
+    def test_variant_amino_acid(
+        self,
+        five_prime_seq: str,
+        codon: str,
+        expected: str,
+    ):
+        variant_class = VariantAA(five_prime_seq, Region(0, 3), 0)
+
+        assert variant_class.variant_amino_acid(codon) == expected
+
+    @pytest.mark.parametrize(
+        "amino_one, amino_two, expected",
+        [
+            ("R", "A", -1),
+            ("A", "R", -1),
+            ("A", "A", 4),
+        ]
+    )
+    def test_amino_acid_difference_score(
+        self,
+        five_prime_seq: str,
+        amino_one: str,
+        amino_two: str, 
+        expected: int,
+    ):
+        variant_class = VariantAA(five_prime_seq, Region(0, 3), 0)
+
+        assert variant_class.amino_acids_difference_score(amino_one, amino_two) == expected
+    
+    @pytest.mark.parametrize(
+        "codon, expected",
+        [
+            ("GCC", 27.8499),
+            ("ATT", 15.7146),
+        ]
+    )
+    def test_codon_usage(
+        self,
+        five_prime_seq: str,
+        codon: str,
+        expected: float,
+    ):
+        variant_class = VariantAA(five_prime_seq, Region(0, 3), 0)
+
+        assert variant_class.codon_usage(codon) == expected
