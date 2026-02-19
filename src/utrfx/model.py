@@ -125,12 +125,12 @@ class TxperGene:
         except (FileNotFoundError, json.JSONDecodeError) as e:
             raise ValueError(f"Error: {e}")
 
-    def ensembl_transcript(
+    def get_transcript_id(
         self,
         gene_symbol: str,
     ) -> typing.Optional[str]:
         """
-        Retrieve the canonical ENSEMBL transcript if available.
+        Retrieve the canonical transcript if available.
         """
         return self._dict.get(gene_symbol)
     

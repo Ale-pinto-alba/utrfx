@@ -28,6 +28,7 @@ dependencies = [
     "pandas >= 2.0.0, <3.0",
     "requests >= 2.32.0, <3.0",
     "pysam >= 0.22.0, <0.23",
+    "viennarna >= 2.7.0, <3.0",
 ]
 
 [project.optional-dependencies]
