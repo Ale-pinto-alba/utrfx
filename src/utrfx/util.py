@@ -2,10 +2,13 @@ import typing
 
 import requests
 import pandas as pd
-import numpy as np
 
-from utrfx.genome import Region
-from utrfx.model import FiveUTRCoordinates, UORFCoordinates
+from utrfx.genome import *
+from utrfx.model import *
+from utrfx.gtf_io import GTFio
+from utrfx.uorf import *
+from utrfx.variant_util import *
+from utrfx.rna_util import *
 
 
 def fetch_cdna_from_ensembl(transcript_id: str, timeout: float = 30.,) -> str:
@@ -88,3 +91,19 @@ def sum_all_features(row: pd.Series) -> float:
     """
     numeric_row = pd.to_numeric(row, errors='coerce')
     return numeric_row.sum()
+
+def obtain_all_features_as_list(
+    five_utr_cdna_sequence: str,
+    variant: VariantCoordinates,
+) -> typing.List:
+    """
+    :param five_utr_cdna_sequence: The 5' UTR cDNA sequence.
+    :returns: A list of all features.
+    """
+
+    wt_fc = RNA.fold_compound(five_utr_cdna_sequence)
+    wt_structure, wt_mfe = wt_fc.mfe()
+    wt_fc.pf()
+    wt_canonical_diversity = wt_fc.mean_bp_distance()
+    wt_mfe_freq = wt_fc.pr_structure(wt_structure)
+    
