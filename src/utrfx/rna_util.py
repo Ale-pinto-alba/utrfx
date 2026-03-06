@@ -12,6 +12,13 @@ class RNA_folding:
     See here: Lorenz, Ronny and Bernhart, Stephan H. and Höner zu Siederdissen, Christian and Tafer, Hakim and Flamm, Christoph and Stadler, Peter F. and Hofacker, Ivo L.
     ViennaRNA Package 2.0
     Algorithms for Molecular Biology, 6:1 26, 2011, doi:10.1186/1748-7188-6-26
+
+    :param wt_sequence: a `str` with the wild-type nucleotide sequence.
+    :param variant_sequence: a `str` with the nucleotide sequence containing the variant.
+    :param fc_wt: the `fold_compound` object for the wild-type sequence.
+    :param fc_variant: the `fold_compound` object for the sequence with the variant.
+    :param wt_structure: a `str` with the dot-bracket representation of the wild-type sequence structure.
+    :param variant_structure: a `str` with the dot-bracket representation of the sequence with the variant structure.
     """
     def __init__(
         self,
@@ -27,20 +34,22 @@ class RNA_folding:
 
     def _fc_wt_generator(self) -> RNA.fold_compound:
         """"
-        Return the `fold_compound` of the wild-type sequence. This object is the core data structure of the ViennaRNA package, that holds data related
+        :returns: the `fold_compound` of the wild-type sequence. This object is the core data structure of the ViennaRNA package, that holds data related
         to the sequence, stores folding models and energy parameters, matrices and constraints.
         """
         return RNA.fold_compound(self._wt_sequence)
     
     def _fc_variant_generator(self) -> RNA.fold_compound: 
         """
-        Return the `fold_compound` of the sequence with the variant.
+        :returns: the `fold_compound` of the sequence with the variant.
         """
         return RNA.fold_compound(self._variant_sequence)
     
     def _wt_structure_generator(self) -> str:
         """
         Generate the structure as a dot-bracket representation of the wild-type sequence.
+
+        :returns: a `str` with the dot-bracket representation of the wild-type sequence structure.
         """
         wt_structure, wt_mfe = self._fc_wt.mfe()
         return wt_structure
@@ -48,6 +57,8 @@ class RNA_folding:
     def _variant_structure_generator(self) -> str:
         """
         Generate the structure as a dot-bracket representation of the sequence with the variant.
+
+        :returns: a `str` with the dot-bracket representation of the sequence with the variant structure.
         """
         variant_structure, wt_mfe = self._fc_variant.mfe()
         return variant_structure
@@ -56,7 +67,7 @@ class RNA_folding:
         """
         Stores the Minimum Free Energy (MFE) ensemble of the altered sequence.
 
-        Returns: an `float` with the MFE value.
+        :returns: a `float` with the MFE value.
         """
         variant_structure, variant_mfe = self._fc_variant.mfe()
         return variant_mfe
@@ -65,7 +76,7 @@ class RNA_folding:
         """
         Calculate the difference between the Minimum Free Energy (MFE) ensemble of the wild-type and the altered sequence.
 
-        Returns: an `float` with the difference.
+        :returns: a `float` with the difference.
         """
         wt_structure, wt_mfe = self._fc_wt.mfe()
         variant_structure, variant_mfe = self._fc_variant.mfe()
@@ -75,7 +86,7 @@ class RNA_folding:
         """
         Stores the ensemble diversity of the altered sequence.
 
-        Returns: an `float` with the ensemble diversity value.
+        :returns: a `float` with the ensemble diversity value.
         """
         self._pf()    
         variant_diversity = self._fc_variant.mean_bp_distance()
@@ -85,7 +96,7 @@ class RNA_folding:
         """
         Calculate the difference between the Ensemble diversity of the wild-type and the altered sequence.
 
-        Returns: an `float` with the difference.
+        :returns: a `float` with the difference.
         """ 
         self._pf()    
 
@@ -97,7 +108,7 @@ class RNA_folding:
         """
         Stores the MFE frequency of the altered sequence.
 
-        Returns: an `float` with the MFE frequency value.
+        :returns: a `float` with the MFE frequency value.
         """
         self._pf()    
         variant_mfe_frequency = self._fc_variant.pr_structure(self._variant_structure)
@@ -107,7 +118,7 @@ class RNA_folding:
         """
         Give the difference between the MFE frequency of the wild-type and the altered sequence.
 
-        Returns: an `float` with the difference.
+        :returns: a `float` with the difference.
         """ 
         self._pf()    
 
@@ -120,7 +131,7 @@ class RNA_folding:
         Give the Hamming distance between the wild-type and the altered sequence. This can only be calculated if both sequences
         are the same length. 
 
-        Returns: an `int` with the distance.
+        :returns: an `int` with the distance.
         """ 
         return RNA.hamming_distance(self._wt_structure, self._variant_structure)
     
@@ -128,13 +139,15 @@ class RNA_folding:
         """
         Give the base pair distance between the wild-type and the altered sequence.
 
-        Returns: an `int` with the distance.
+        :returns: an `int` with the distance.
         """ 
         return RNA.bp_distance(self._wt_structure, self._variant_structure)
     
     def _pf(self):
         """
         Calculate the partition function over all possible secondary structures for both sequences.
+
+        :returns: None, but updates the `fold_compound` objects with the partition function data, which is necessary for calculating certain features, e.g. ensemble diversity or MFE frequency.
         """
         self._fc_wt.pf()
         self._fc_variant.pf()
@@ -143,7 +156,7 @@ class RNA_folding:
         """
         Calculate the difference between the number of unpaired bases between the two sequences.
 
-        Returns: an `int` with the difference.
+        :returns: an `int` with the difference.
         """
         wt_unpaired = self._wt_structure.count('.')
         variant_unpaired = self._variant_structure.count('.')
@@ -153,7 +166,7 @@ class RNA_folding:
         """
         Calculate the percentage of unpaired bases in the altered sequence.
 
-        Returns: a `float` with the percentage.
+        :returns: a `float` with the percentage.
         """ 
         variant_unpaired = self._variant_structure.count('.')
         return (variant_unpaired * 100) / len(self._variant_structure)
@@ -162,7 +175,7 @@ class RNA_folding:
         """
         Calculate the difference in the number of loops in the sequences.
 
-        Returns: a `int` with the difference. 
+        :returns: a `int` with the difference. 
         """  
         wt_pt = RNA.ptable(self._wt_structure)
         wt_loops = RNA.loopidx_from_ptable(wt_pt)
@@ -180,7 +193,7 @@ class RNA_folding:
         """
         Count the number of loops in the sequence with the variant.
 
-        Returns: a `int` with the number of loops. 
+        :returns: a `int` with the number of loops. 
         """  
         variant_pt = RNA.ptable(self._variant_structure)
         variant_loops = RNA.loopidx_from_ptable(variant_pt)
@@ -197,10 +210,8 @@ class RNA_folding:
         """
         Calculates the difference in structural depth between the sequences.
 
-        Arg:
-            variant_pos: `int` with the variant position within the sequence.
-
-        Returns: an `int` indicating the difference in cumulative structure score at the variant position. 
+        :param variant_pos: `int` with the variant position within the sequence.
+        :returns: an `int` indicating the difference in cumulative structure score at the variant position. 
         """ 
         def _dot_bracket_depth(structure: str, variant_pos: int) -> int:
             score = 0
@@ -222,10 +233,8 @@ class RNA_folding:
         """
         Indicate the type of structural element in the variant position of the altered sequence.
 
-        Arg:
-            variant_pos: `int` with the variant position within the sequence.
-
-        Returns: a `str` with the element type.
+        :param variant_pos: `int` with the variant position within the sequence.
+        :returns: a `str` with the element type.
         """
         if self._wt_structure[variant_pos] == "(" or self._wt_structure[variant_pos] == ")":
             return "Stem"
@@ -240,11 +249,9 @@ class RNA_folding:
         """
         Stores the ubox base pairing probabilities between nucleotides of a sequence.
 
-        Args:
-            sequence: a `str` containing the nucleotide sequence.
-            threshold: a `float` to filter base pair probabilities.
-
-        Returns: a `list` containing the ubox base pair probabilities.
+        :param sequence: a `str` containing the nucleotide sequence.
+        :param threshold: a `float` to filter base pair probabilities.
+        :returns: a `list` containing the ubox base pair probabilities.
         """
         ubox = []
         fc = RNA.fold_compound(sequence)
@@ -264,10 +271,8 @@ class RNA_folding:
         """
         Stores the lbox pairs of a sequence.
 
-        Args:
-            sequence: a `str` containing the nucleotide sequence.
-
-        Returns: a `list` containing the lbox pairs.
+        :param sequence: a `str` containing the nucleotide sequence.
+        :returns: a `list` containing the lbox pairs.
         """
         lbox = []
         fc = RNA.fold_compound(sequence)
@@ -295,10 +300,9 @@ class RNA_folding:
         """
         Calculates the difference between the number of lbox pairs between two sequences.
 
-        Args:
-            lbox*: a `list` containing the lbox probabilities of a sequence.
-
-        Returns: a `float` with the difference.
+        :param wt_lbox: a `list` containing the lbox probabilities of the wild-type sequence.
+        :param variant_lbox: a `list` containing the lbox probabilities of the variant sequence.
+        :returns: a `int` with the difference.
         """
         return len(wt_lbox) - len(variant_lbox)
     
@@ -310,10 +314,9 @@ class RNA_folding:
         """
         Calculates the Jaccard Similarity between the lbox pairs of two sequences.
 
-        Args:
-            lbox*: a `list` containing the lbox probabilities of a sequence.
-
-        Returns: a `float` with the Jaccard Similarity value.
+        :param wt_lbox: a `list` containing the lbox probabilities of the wild-type sequence.
+        :param variant_lbox: a `list` containing the lbox probabilities of the variant sequence.
+        :returns: a `float` with the Jaccard Similarity value.
         """
         wt_pairs = set((d["pos1"], d["pos2"]) for d in wt_lbox)
         variant_pairs = set((d["pos1"], d["pos2"]) for d in variant_lbox)
@@ -332,10 +335,9 @@ class RNA_folding:
     ) -> float:
         """
         Calculates the sum of all ubox probabilities of a sequence.
-        Args:
-            ubox: a `list` containing the ubox probabilities of a sequence.
 
-        Returns: a `float` with the sum.
+        :param ubox: a `list` containing the ubox probabilities of a sequence.
+        :returns: a `float` with the sum.
         """
         return sum(entry["score"] for entry in ubox)
 
@@ -346,11 +348,10 @@ class RNA_folding:
     ) -> float:
         """
         Compares and calculates the difference between all the ubox probabilities between two sequences.
-
-        Args:
-            ubox*: a `list` containing the ubox probabilities of a sequence.
-
-        Returns: a `float` with the difference.
+        
+        :param wt_ubox: a `list` containing the ubox probabilities of the wild-type sequence.
+        :param variant_ubox: a `list` containing the ubox probabilities of the variant sequence.
+        :returns: a `float` with the difference.
         """
         wt_sum_ubox = sum([x["score"] for x in wt_ubox])
         variant_sum_ubox = sum([x["score"] for x in variant_ubox])
@@ -364,10 +365,9 @@ class RNA_folding:
         """
         Calculates the mean absolute difference between the ubox probabilities between two sequences.
 
-        Args:
-            ubox*: a `list` containing the ubox probabilities of a sequence.
-
-        Returns: a `float` with the difference.
+        :param wt_ubox: a `list` containing the ubox probabilities of the wild-type sequence.
+        :param variant_ubox: a `list` containing the ubox probabilities of the variant sequence.
+        :returns: a `float` with the difference.
         """
         all_pairs = {}
 
@@ -393,11 +393,9 @@ class RNA_folding:
         """
         Calculates the Shannon Entropy of a sequence.
 
-        Args:
-            ubox: a `list` containing the ubox probabilities of a sequence.
-            sequence_length: an `int` containing the length of the sequence.
-
-        Returns: a `float` with the entropy value.
+        :param ubox: a `list` containing the ubox probabilities of a sequence.
+        :param sequence_length: an `int` containing the length of the sequence.
+        :returns: a `float` with the entropy value.
         """
         probs = [0.0] * (sequence_length + 1)
 
@@ -423,10 +421,9 @@ class RNA_folding:
     ) -> float:
         """
         Calculates the Shannon Entropy difference between two sequences.
-
-        Args:
-            shannon_entropy*: a `float` with the Shannon Entropy value.
-
-        Returns: a `float` with the entropy value difference.
+        
+        :param wt_shannon_entropy: a `float` with the Shannon Entropy value of the wild-type sequence.
+        :param variant_shannon_entropy: a `float` with the Shannon Entropy value of the variant sequence.
+        :returns: a `float` with the entropy value difference.
         """
         return wt_shannon_entropy - variant_shannon_entropy

@@ -7,6 +7,8 @@ from utrfx.genome import GenomicRegion, Region
 class FiveUTRCoordinates:
     """
     `FiveUTR` is a container for 5'UTR Genomic Regions.
+
+    :param regions: a collection of GenomicRegion objects representing the 5'UTR regions of a transcript.
     """
     def __init__(
         self,
@@ -104,6 +106,8 @@ class UORFCoordinates:
 class TxperGene:
     """
     `TxperGene` provides the canonical transcript of a given gene.
+
+    :param fpath: path to the JSON file containing the canonical transcript for each gene.
     """
     def __init__(
         self,
@@ -118,6 +122,9 @@ class TxperGene:
     ) -> dict:
         """
         Load transcript data from a JSON file into a dictionary.
+
+        :param fpath: the path to the JSON file containing the transcript data.
+        :returns: a dictionary where keys are gene symbols and values are transcript IDs.
         """
         try:
             with open(fpath, "r", encoding="utf-8") as file:
@@ -131,6 +138,9 @@ class TxperGene:
     ) -> typing.Optional[str]:
         """
         Retrieve the canonical transcript if available.
+
+        :param gene_symbol: a gene symbol, e.g. "TP53".
+        :returns: the transcript ID corresponding to the given gene symbol, or None if not found.
         """
         return self._dict.get(gene_symbol)
     

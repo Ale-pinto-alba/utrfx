@@ -12,6 +12,8 @@ class GTFio:
     Parse a GTF file and return the available transcripts (as TranscriptCoordinates class).
 
     It is tested in the GENCODE GTF file, others GTF files may change the manner of indicating UTRs.
+    
+    :param fpath: path to the GTF file.
     """
     def __init__(
         self,
@@ -24,6 +26,8 @@ class GTFio:
     def gtf_to_dataframe(self) -> pd.DataFrame:
         """
         Convert GTF file into a pandas DataFrame.
+
+        :returns: a pandas DataFrame with columns: seqname, feature, start, end, strand, transcript_id, gene_name.
         """
         gtf_df = pd.read_csv(self._fpath, sep = "\t", header = None, comment = "#")
         gtf_df.columns = [
@@ -61,6 +65,9 @@ class GTFio:
         """
         Obtain transcripts if the 5'UTR regions are not explicitly indicated in the GTF file, according to their position
         in relation to the CDS start codon. 
+
+        :param genome_build: the reference genome to which the GTF file corresponds, e.g. GRCh37 or GRCh38.
+        :returns: a list of TranscriptCoordinates objects, each containing the transcript ID and its 5'UTR Genomic Regions.
         """
         utr_df = self._gtf_df[self._gtf_df["feature"] == "UTR"]
         start_codon_df = self._gtf_df[self._gtf_df["feature"] == "start_codon"]
@@ -114,6 +121,8 @@ class GTFio:
         ) -> typing.Collection[TxCoordinatesperGene]:
             """
             Obtain transcripts coordinates per gene in the GTF file.
+
+            :returns: a list of TxCoordinatesperGene objects, each containing the gene name, transcript ID, and its Genomic Region.
             """
             tx_df = self._gtf_df[self._gtf_df["feature"] == "transcript"]
             transcripts_coordinates = [
@@ -127,6 +136,12 @@ class GTFio:
         self,
         val: str,
     ) -> Strand:
+        """
+        Parse the strand value from the GTF file, which is typically indicated as "+" for the positive strand and "-" for the negative strand.
+
+        :param val: the strand value from the GTF file, e.g. "+" or "-".
+        :returns: the corresponding Strand enum value.
+        """
         if val == "+":
             return Strand.POSITIVE
         elif val == "-":

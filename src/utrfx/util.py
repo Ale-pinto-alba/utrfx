@@ -12,7 +12,9 @@ def fetch_cdna_from_ensembl(transcript_id: str, timeout: float = 30.,) -> str:
     """
     Download cDNA sequence (spliced mRNA) for a given transcript from Ensembl's REST API.
 
-    :param transcript_id: Ensembl transcript identifier e.g. `ENST00000381418`
+    :param transcript_id: Ensembl transcript identifier e.g. `ENST00000381418`.
+    :param timeout: timeout for the API request in seconds (default: 30 seconds).
+    :returns: a `str` with the cDNA sequence.
     """
     base_url_cdna = f"https://rest.ensembl.org/sequence/id/{transcript_id}?type=cdna&content-type=text/x-fasta"
     
@@ -31,6 +33,7 @@ def get_five_prime_sequence(cdna_sequence: str, five_utrs: FiveUTRCoordinates) -
 
     :param transcript_sequence: transcript nucleotide sequence.
     :param five_utrs: 5'UTR Genomic Region(s).
+    :returns: a `str` with the 5'UTR cDNA sequence.
     """
     return cdna_sequence[:len(five_utrs)]
 
@@ -41,6 +44,7 @@ def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.C
 
     :param five_utr: list of Genomic Regions corresponding to the 5'UTRs regions.
     :param five_sequence: 5'UTR cDNA sequence.
+    :returns: a list of UORFCoordinates objects, each containing the uORF region and whether it is an overlapping uORF (ouORF).
     """
     uorfs = []
     start_position = 0
@@ -80,6 +84,7 @@ def sum_all_features(row: pd.Series) -> float:
     Sum all numeric values in a row (ignoring non-numeric columns).
     
     :param row: A row from a pandas DataFrame.
+    :returns: The sum of all numeric values in the row.
     """
     numeric_row = pd.to_numeric(row, errors='coerce')
     return numeric_row.sum()

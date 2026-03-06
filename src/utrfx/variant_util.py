@@ -11,6 +11,10 @@ class AltAlleleSeq:
     `AltAlleleSeq` allows the obtention of the cDNA sequence of a variant.
 
     It permits to check if the variant is located in the given transcript's 5'UTR.
+
+    :param variant: a `VariantCoordinates` object containing the variant region, reference and alternative alleles.
+    :param cdna: a `str` with the cDNA sequence of the transcript.
+    :param five_utrs: a `FiveUTRCoordinates` object containing the 5'UTR Genomic Region(s) of the transcript.
     """
     def __init__(
         self,
@@ -30,6 +34,8 @@ class AltAlleleSeq:
     def variant_position(self) -> int:
         """
         Obtain the variant position index whithin the cDNA transcript sequence as a integer.
+
+        :returns: an `int` with the variant position within the cDNA sequence.
         """
         five_utrs_tuple = []
         for region in self._five_utrs.regions:
@@ -64,6 +70,8 @@ class AltAlleleSeq:
     def prepare_alt_seq(self) -> str:
         """
         Get the 5'UTR region with an alternative allele from the reference cDNA.
+
+        :returns: a `str` with the cDNA sequence of the variant.
         """
         return self._cdna[:self._variant_cdna_pos] + self._alt + self._cdna[self._variant_cdna_pos + len(self._ref):]
     
@@ -92,6 +100,8 @@ class AltAlleleSeq:
     def check_variant_in_cdna(self) -> str:
         """
         Check if the variant is in the 5'UTR and if the reference alleles match.
+
+        :returns: a `str` with the result of the check, either an error message or an indication that the variant is in the 5'UTR and the reference alleles match.
         """
         for region in self._five_utrs.regions:
             five_utr_contig = region.contig
@@ -121,6 +131,8 @@ class VCFfile:
     `VCFfile` represents a VCF file and allow to search for specific variants within it.
 
     The object must be used as a context manager to ensure proper resource cleanup.
+
+    :param vcf_fpath: path to the VCF file.
     """
     def __init__(
         self,
@@ -167,6 +179,7 @@ class VCFfile:
         :param contig: the query region contig.
         :param start: 0-based (excluded) start coordinate of the query region.
         :param start: 0-based (included) end coordinate of the query region.
+        :returns: a list of `VariantCoordinates` objects corresponding to the variants in the query region.
         """
         assert self._vcf_file is not None, "VCFfile must be used as a context manager"
         variant_list = []
@@ -187,6 +200,7 @@ class VCFfile:
         Get the allele frequency for the specified variant.
 
         :param variant: single variant as `VariantCoordinates`class instance.
+        :returns: the allele frequency as a float, or None if not available.
         """
         assert self._vcf_file is not None, "VCF file must be used as a context manager"
 
@@ -207,6 +221,8 @@ class VCFfile:
     def _get_af_field(self):
         """
         Determines which AF field is present in the VCF header: 'AF_joint' or 'AF'.
+
+        :returns: the name of the AF field as a string, or None if neither field is present.
         """
         assert self._vcf_file is not None, "VCF file must be used as a context manager"
         if 'AF_joint' in self._vcf_file.header.info:
@@ -219,6 +235,13 @@ class VCFfile:
 class VariantClassifier:
     """
     `MutationClassifier` allows the determination of the mutation type of a given variant and which uORF is affected.
+
+    :param canonical_uorfs_lengths_list: list containing the uORFs lengths of the canonical sequence.
+    :param variant_uorfs_lengths_list: list containing the uORFs lengths of the variant sequence.
+    :param canonical_uorfs_ouorf_list: list containing if the uORFs of the canonical sequence are overlapping.
+    :param variant_uorfs_ouorf_list: list containing if the uORFs of the variant sequence are overlapping.
+    :param uorf_end_pos: integer corresponding to the end of the uORF.
+    :param variant_cdna_pos: integer corresponding to the variant position within the cDNA sequence.
     """
     def __init__(
         self,
@@ -341,6 +364,8 @@ class VariantAA:
         Return the codon that contains the variant.
 
         Work only for SNV.
+
+        :returns: a `str` with the codon that contains the variant, or None if the variant is not in a codon.
         """
         for i in range(self._uorf_coordinates.start, self._uorf_coordinates.end, 3):
             codon = self._five_prime_seq[i:i + 3]
@@ -352,6 +377,9 @@ class VariantAA:
     def variant_amino_acid(codon: str) -> str:
         """
         Retrieve the amino acid coded by the codon.
+
+        :param codon: a `str` with the codon sequence.
+        :returns: a `str` with the amino acid coded by the codon.
         """
         aa_dict = { 
         'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M', 
@@ -381,6 +409,10 @@ class VariantAA:
     ) -> typing.Optional[int]:
         """
         Obtain the value corresponding to the BLOSUM62 value between two amino acids.
+
+        :param amino_acid_one: a `str` with the first amino acid.
+        :param amino_acid_two: a `str` with the second amino acid.
+        :returns: the BLOSUM62 score as an `int`, or None if either amino acid is not valid.
         """
         blosum62 = {
             'A': [4, 0, -2, -1, -2, 0, -2, -1, -1, -1, -1, -2, -1, -1, -1, 1, 0, 0, -3, -2],
@@ -416,6 +448,9 @@ class VariantAA:
         Krishnamurthy Subramanian, Bryan Payne, Felix Feyertag, David Alvarez-Ponce, 
         The Codon Statistics Database: A Database of Codon Usage Bias, Molecular Biology and Evolution, Volume 39, Issue 8, August 2022, msac157, 
         https://doi.org/10.1093/molbev/msac157
+
+        :param codon: a `str` with the codon sequence.
+        :returns: the codon usage frequency as a float.
         """
         codon_frequency = {
             "AAA": 25.1901, "AAG": 31.4481, "AAT": 17.0444, "AAC": 18.3501,
