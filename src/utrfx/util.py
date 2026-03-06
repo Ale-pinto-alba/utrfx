@@ -93,17 +93,25 @@ def sum_all_features(row: pd.Series) -> float:
     return numeric_row.sum()
 
 def obtain_all_features_as_list(
-    five_utr_cdna_sequence: str,
-    variant: VariantCoordinates,
+    wt_five_utr_cdna_sequence: str,
+    variant_five_utr_cdna_sequence: str,
 ) -> typing.List:
     """
-    :param five_utr_cdna_sequence: The 5' UTR cDNA sequence.
+    :param wt_five_utr_cdna_sequence: The wild-type 5' UTR cDNA sequence.
+    :param variant_five_utr_cdna_sequence: The variant 5' UTR cDNA sequence.
     :returns: A list of all features.
     """
 
-    wt_fc = RNA.fold_compound(five_utr_cdna_sequence)
+    wt_fc = RNA.fold_compound(wt_five_utr_cdna_sequence)
     wt_structure, wt_mfe = wt_fc.mfe()
     wt_fc.pf()
     wt_canonical_diversity = wt_fc.mean_bp_distance()
     wt_mfe_freq = wt_fc.pr_structure(wt_structure)
-    
+    wt_lbox, wt_ubox = generate_probs(wt_five_utr_cdna_sequence)
+
+    variant_fc = RNA.fold_compound(variant_five_utr_cdna_sequence)
+    variant_structure, variant_mfe = variant_fc.mfe()
+    variant_fc.pf()
+    variant_canonical_diversity = variant_fc.mean_bp_distance()
+    variant_mfe_freq = variant_fc.pr_structure(variant_structure)
+    variant_lbox, variant_ubox = generate_probs(variant_five_utr_cdna_sequence)
