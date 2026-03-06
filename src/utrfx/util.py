@@ -95,13 +95,18 @@ def sum_all_features(row: pd.Series) -> float:
 def obtain_all_features_as_list(
     wt_five_utr_cdna_sequence: str,
     variant_five_utr_cdna_sequence: str,
+    variant_position: int,
 ) -> typing.List:
     """
     :param wt_five_utr_cdna_sequence: The wild-type 5' UTR cDNA sequence.
     :param variant_five_utr_cdna_sequence: The variant 5' UTR cDNA sequence.
+    :param variant_position: The position of the variant.
     :returns: A list of all features.
     """
+    # Initialize an empty list to store the results
+    results = []
 
+    # RNA secondary structure parameters for the wild-type and variant 5' UTR sequences 
     wt_fc = RNA.fold_compound(wt_five_utr_cdna_sequence)
     wt_structure, wt_mfe = wt_fc.mfe()
     wt_fc.pf()
@@ -115,3 +120,31 @@ def obtain_all_features_as_list(
     variant_canonical_diversity = variant_fc.mean_bp_distance()
     variant_mfe_freq = variant_fc.pr_structure(variant_structure)
     variant_lbox, variant_ubox = generate_probs(variant_five_utr_cdna_sequence)
+
+    # RNA secondary structure features
+    rna_folding = RNA_folding(wt_five_utr_cdna_sequence, variant_five_utr_cdna_sequence)
+    results.append(rna_folding.variant_mfe())
+    results.append(rna_folding.mfe_diff())
+    results.append(rna_folding.variant_ensemble_diversity())
+    results.append(rna_folding.ensemble_diversity_diff())
+    results.append(rna_folding.variant_mfe_frequency())
+    results.append(rna_folding.mfe_frequency_diff())
+    results.append(rna_folding.hamming_distance())
+    results.append(rna_folding.bp_distance())
+    results.append(rna_folding.unpaired_bases_diff())
+    results.append(rna_folding.unpaired_bases_percentage())
+    results.append(rna_folding.number_loops())
+    results.append(rna_folding.number_loops_diff())
+    results.append(rna_folding.variant_pos_structural_element(variant_position))
+    results.append(rna_folding.structural_difference_at_variant_position(variant_position))
+    results.append(rna_folding.compare_number_lbox_pairs(wt_lbox, variant_lbox))
+    results.append(rna_folding.jaccard_similarity(wt_lbox, variant_lbox))
+    results.append(rna_folding.ubox_total_probs_sum(variant_ubox))
+    results.append(rna_folding.ubox_total_probs_diff(wt_ubox, variant_ubox))
+    results.append(rna_folding.ubox_mean_prob_diff(wt_ubox, variant_ubox))
+    
+    wt_shannon_entropy = rna_folding.shannon_entropy(wt_ubox, len(wt_five_utr_cdna_sequence))
+    variant_shannon_entropy = rna_folding.shannon_entropy(variant_ubox, len(variant_five_utr_cdna_sequence))
+    results.append(variant_shannon_entropy)
+    results.append(rna_folding.shannon_entropy_diff(wt_shannon_entropy, variant_shannon_entropy))
+    
