@@ -1,4 +1,7 @@
+import os
+import tempfile
 import numpy as np
+from asyncio import subprocess
 
 import RNA
 
@@ -427,3 +430,70 @@ class RNA_folding:
         :returns: a `float` with the entropy value difference.
         """
         return wt_shannon_entropy - variant_shannon_entropy
+    
+def generate_probs(sequence: str): 
+    """
+    Generate the lbox pairs and ubox probabilities of a sequence using RNAfold, and stores them in separate lists.
+
+    :param sequence: a `str` containing the nucleotide sequence.
+    :returns: two `list`, one with the lbox pairs and another with the ubox probabilities.
+    """
+    lbox = []
+    ubox = []
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cwd = os.getcwd()
+        os.chdir(tmpdir)
+
+        try:
+            process = subprocess.run(
+                ['RNAfold', '--partfunc', '--noPS'],
+                input=sequence,
+                text=True,
+                capture_output=True,
+                check=True
+            )
+
+            dotplot_file = os.path.join(tmpdir, "dot.ps")
+            if not os.path.exists(dotplot_file):
+                print("No se generó el archivo dot.ps.")
+                return lbox, ubox
+
+            with open(dotplot_file, 'r') as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if len(parts) == 4:
+                        try:
+                            pos1 = int(parts[0])
+                            pos2 = int(parts[1])
+                            prob = float(parts[2])
+                            type = parts[3]
+
+                            entry = {"pos1": pos1, "pos2": pos2, "score": prob}
+
+                            if type == "lbox":
+                                lbox.append(entry)
+                            elif type == "ubox":
+                                ubox.append(entry)
+                        except ValueError:
+                            continue 
+        finally:
+            os.chdir(cwd)
+
+    return lbox, ubox
+
+def compare_probs(lbox1: list, ubox1: list, lbox2: list, ubox2: list) -> float:
+    """
+    Compare the lbox and ubox probabilities between two sequences and calculates the difference in total probabilities.
+    
+    :param lbox1: a `list` containing the lbox probabilities of the first sequence.
+    :param ubox1: a `list` containing the ubox probabilities of the first sequence.
+    :param lbox2: a `list` containing the lbox probabilities of the second sequence.
+    :param ubox2: a `list` containing the ubox probabilities of the second sequence.
+    :returns: a `float` with the difference in total probabilities.
+    """
+    sum_probs_first_Seq = sum([x["score"] for x in lbox1 + ubox1])
+    suma_probs_second_seq = sum([x["score"] for x in lbox2 + ubox2])
+    probs_diff = sum_probs_first_Seq - suma_probs_second_seq
+
+    return probs_diff
