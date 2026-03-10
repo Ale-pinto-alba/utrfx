@@ -1,3 +1,6 @@
+import typing
+
+from utrfx.genome import Region
 from utrfx.model import UORFCoordinates
 
 
@@ -139,3 +142,16 @@ def kozak_sequence_strength(five_sequence: str, uorf: UORFCoordinates) -> int:
         return 1
     else:
         return 0
+    
+def uorf_affected(wt_uorf_coordinates_list: typing.List[Region], variant_cdna_pos: int) -> typing.Optional[int]:
+    """
+    Determine which uORF is affected by the variant.
+
+    :param wt_uorf_coordinates_list: a list of `Region` objects containing the coordinates of the wild-type uORFs.
+    :param variant_cdna_pos: the position of the variant in cDNA coordinates.
+    :returns: the index of the affected uORF (starting from 1) or `None` if no uORF is affected.
+    """
+    for uorf_index, uorf_region in enumerate(wt_uorf_coordinates_list):
+        if uorf_region.start <= variant_cdna_pos <= uorf_region.end:
+            return uorf_index + 1
+    return None

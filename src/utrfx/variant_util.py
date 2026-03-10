@@ -338,14 +338,6 @@ class VariantClassifier:
         if indel_snv_mutation:
             return indel_snv_mutation
         
-    def uorf_affected(self) -> typing.Optional[int]:
-        """
-        Determine which uORF is affected by the variant.
-        """
-        for uorf_index, uorf_region in enumerate(self._canonical_uorf_coordinates_list):
-            if uorf_region.start <= self._variant_cdna_pos <= uorf_region.end:
-                return uorf_index + 1
-        return None
     
 class VariantAA:
 

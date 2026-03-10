@@ -92,8 +92,11 @@ def sum_all_features(row: pd.Series) -> float:
     numeric_row = pd.to_numeric(row, errors='coerce')
     return numeric_row.sum()
 
-def obtain_all_features_as_dict(
+def obtain_row_as_dict(
     tx_id: str,
+    five_utr: FiveUTRCoordinates,
+    variant: VariantCoordinates,
+    variant_file: VCFfile,
     wt_five_utr_cdna_sequence: str,
     variant_five_utr_cdna_sequence: str,
     variant_position: int,
@@ -102,9 +105,11 @@ def obtain_all_features_as_dict(
     :param tx_id: The transcript ID for which the features are being calculated.
     :param wt_five_utr_cdna_sequence: The wild-type 5' UTR cDNA sequence.
     :param variant_five_utr_cdna_sequence: The variant 5' UTR cDNA sequence.
-    :param variant_position: The position of the variant.
+    :param variant_position: The position of the variant within the 5' UTR cDNA sequence.
     :returns: A dictionary of all features.
     """
+    # TODO: what about the source?
+
     # Initialize the object to calculate RNA folding features
     rna_folding = RNA_folding(wt_five_utr_cdna_sequence, variant_five_utr_cdna_sequence)
 
@@ -119,9 +124,16 @@ def obtain_all_features_as_dict(
     variant_lbox, variant_ubox = generate_probs(variant_five_utr_cdna_sequence)
     variant_shannon_entropy = rna_folding.shannon_entropy(variant_ubox, len(variant_five_utr_cdna_sequence))
 
-    # RNA secondary structure features
+    # Search for uORFs in the sequences
+    wt_uorfs = uorf_extractor(five_utr, wt_five_utr_cdna_sequence)
+    variant_uorfs = uorf_extractor(five_utr, variant_five_utr_cdna_sequence)
+
+
+
+    # Return a dictionary with all features
     return {
-        "tx_id": tx_id,
+        "tx_id": tx_id + "_" + f"chr{variant.chrom}" + "-" + str(variant.end) + "-" + (variant.ref) + ">" + (variant.alt),
+        "af": variant_file.get_allele_frequency(variant),
         "variant_mfe": rna_folding.variant_mfe(),
         "mfe_diff": rna_folding.mfe_diff(),
         "variant_ensemble_diversity": rna_folding.variant_ensemble_diversity(),
@@ -143,4 +155,10 @@ def obtain_all_features_as_dict(
         "ubox_mean_prob_diff": rna_folding.ubox_mean_prob_diff(wt_ubox, variant_ubox),
         "var_shannon_entropy": variant_shannon_entropy,
         "shannon_entropy_diff": rna_folding.shannon_entropy_diff(wt_shannon_entropy, variant_shannon_entropy),
+        "number_uorfs_wt": len(wt_uorfs) if wt_uorfs else 0,
+        "uorf_affected": "TODO",
+        "number_uorfs_diff": abs(len(variant_uorfs) - len(wt_uorfs)) if wt_uorfs and variant_uorfs else 0,
+        "length": "TODO",
+        "overlapping_uorf": "TODO",
+
     }
