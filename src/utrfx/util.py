@@ -109,6 +109,7 @@ def obtain_row_as_dict(
     :returns: A dictionary of all features.
     """
     # TODO: what about the source?
+    # TODO: IRES? 
 
     # Initialize the object to calculate RNA folding features
     rna_folding = RNA_folding(wt_five_utr_cdna_sequence, variant_five_utr_cdna_sequence)
@@ -127,13 +128,17 @@ def obtain_row_as_dict(
     # Search for uORFs in the sequences
     wt_uorfs = uorf_extractor(five_utr, wt_five_utr_cdna_sequence)
     variant_uorfs = uorf_extractor(five_utr, variant_five_utr_cdna_sequence)
-
-
+    wt_uorf_regions = [uorf.uorf for uorf in wt_uorfs]
+    uorf_affected_index = uorf_affected(wt_uorf_regions, variant_position)
+    variant_uorf_affected = variant_uorf_affected[uorf_affected_index - 1]
+    variant_aa_class = VariantAA(variant_five_utr_cdna_sequence, variant_uorf_affected.uorf, variant_position) if variant_uorf_affected else None
 
     # Return a dictionary with all features
     return {
         "tx_id": tx_id + "_" + f"chr{variant.chrom}" + "-" + str(variant.end) + "-" + (variant.ref) + ">" + (variant.alt),
         "af": variant_file.get_allele_frequency(variant),
+        "distance_variant_to_cap": variant_position,
+        "distance_variant_to_morf": len(variant_five_utr_cdna_sequence) - variant_position,
         "variant_mfe": rna_folding.variant_mfe(),
         "mfe_diff": rna_folding.mfe_diff(),
         "variant_ensemble_diversity": rna_folding.variant_ensemble_diversity(),
@@ -156,9 +161,17 @@ def obtain_row_as_dict(
         "var_shannon_entropy": variant_shannon_entropy,
         "shannon_entropy_diff": rna_folding.shannon_entropy_diff(wt_shannon_entropy, variant_shannon_entropy),
         "number_uorfs_wt": len(wt_uorfs) if wt_uorfs else 0,
-        "uorf_affected": "TODO",
+        "uorf_affected": uorf_affected_index if uorf_affected_index is not None else 0,
         "number_uorfs_diff": abs(len(variant_uorfs) - len(wt_uorfs)) if wt_uorfs and variant_uorfs else 0,
-        "length": "TODO",
-        "overlapping_uorf": "TODO",
-
+        "length": (variant_uorf_affected.uorf.end - variant_uorf_affected.uorf.start) if variant_uorf_affected else 0,
+        "overlapping_uorf": variant_uorf_affected.ouorf if variant_uorf_affected else False,
+        "gc_content": gc_content(variant_five_utr_cdna_sequence, variant_uorf_affected) if variant_uorf_affected else 0,
+        "gc_content_downstream": gc_content_n_bases_downstream(variant_five_utr_cdna_sequence, variant_uorf_affected, bases=10) if variant_uorf_affected else 0,
+        "kozak_strength": kozak_sequence_strength(variant_five_utr_cdna_sequence, variant_uorf_affected) if variant_uorf_affected else 0,
+        "intercistronic_distance": intercistronic_distance(variant_five_utr_cdna_sequence, variant_uorf_affected) if variant_uorf_affected else 0,
+        "distance_uorf_to_cap": variant_uorf_affected.uorf.start if variant_uorf_affected else 0,
+        "distance_uorf_to_morf": len(variant_five_utr_cdna_sequence) - variant_uorf_affected.uorf.end if variant_uorf_affected else 0,
+        "aa_codified_variant": variant_aa_class.variant_amino_acid() if variant_aa_class else None,
+        "codon_usage": variant_aa_class.codon_usage() if variant_aa_class else None,    
+        "aa_diff_blosum62": variant_aa_class.amino_acids_difference_score() if variant_aa_class else None,
     }
